@@ -1,0 +1,38 @@
+@page
+@model Invoxa.Web.Pages.Clients.CreateModel
+@{ ViewData["Title"] = "Add Client"; }
+@if (!string.IsNullOrWhiteSpace(Model.LimitMessage))
+{
+  <div style="margin-bottom:14px;padding:18px 20px;border:1px solid #fecaca;background:linear-gradient(180deg,#fff7ed,#fff1f2);border-radius:18px;box-shadow:0 10px 24px rgba(15,23,42,.06);">
+    <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#9a3412;">@Model.LimitTitle</div>
+        <div style="margin-top:6px;color:#7c2d12;line-height:1.7;max-width:720px;">@Model.LimitMessage</div>
+      </div>
+      <a class="btn primary" asp-page="/Settings/Company"><i class="bi bi-stars"></i> Review plan</a>
+    </div>
+  </div>
+}
+
+<form method="post" class="form">
+  <div asp-validation-summary="All" class="notice" style="display:@(ViewData.ModelState.IsValid ? "none" : "block");"></div>
+  <div class="row">
+    <div class="input"><label>Name</label><input asp-for="Name" required /><span class="muted" asp-validation-for="Name"></span></div>
+    <div class="input"><label>Email</label><input asp-for="Email" /><span class="muted" asp-validation-for="Email"></span></div>
+  </div>
+  <div class="row">
+    <div class="input"><label>Phone</label><input asp-for="Phone" /><span class="muted" asp-validation-for="Phone"></span></div>
+  </div>
+  <div class="row">
+    <div class="input"><label>Address Line 1</label><input asp-for="AddressLine1" /></div>
+    <div class="input"><label>Address Line 2</label><input asp-for="AddressLine2" /></div>
+  </div>
+  <div class="row">
+    <div class="input"><label>City</label><input asp-for="City" /></div>
+    <div class="input"><label>Country</label><input asp-for="Country" /></div>
+  </div>
+  <div class="stack">
+    <button class="btn primary" type="submit">Save</button>
+    <a class="btn" asp-page="/Clients/Index">Cancel</a>
+  </div>
+</form>

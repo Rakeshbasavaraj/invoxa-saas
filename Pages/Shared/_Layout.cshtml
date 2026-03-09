@@ -1,0 +1,68 @@
+@{
+    var path = Context.Request.Path.Value ?? string.Empty;
+    var isAuthPage = path.StartsWith("/Account", StringComparison.OrdinalIgnoreCase);
+    var isAnonymousHome = string.Equals(path, "/", StringComparison.OrdinalIgnoreCase) && !Context.Request.Cookies.ContainsKey("invoxa_auth");
+    var currentUser = Context.Request.Cookies["invoxa_user"] ?? "Admin";
+    var currentRole = Context.Request.Cookies["invoxa_role"] ?? "Admin";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoxa</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="@(isAuthPage ? "auth-body" : "")">
+@if (isAuthPage || isAnonymousHome)
+{
+  <main>
+    @RenderBody()
+  </main>
+}
+else
+{
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">INVOXA</div>
+      <nav>
+        <a asp-page="/Index">Dashboard</a>
+        <a asp-page="/Clients/Index">Clients</a>
+        <a asp-page="/Invoices/Index">Invoices</a>
+        <a asp-page="/Logs/Index">Logs</a>
+        <a asp-page="/Settings/User">User Settings</a>
+        <a asp-page="/Settings/Company">Company Settings</a>
+        <a asp-page="/Settings/EmailTemplates">Email Templates</a>
+        @if (string.Equals(currentRole, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
+        {
+          <a asp-page="/Owner/Index">Super Admin</a>
+          <a asp-page="/Owner/Companies">Companies</a>
+          <a asp-page="/Owner/Users">Users</a>
+          <a asp-page="/Owner/Invoices">All Invoices</a>
+        }
+      </nav>
+      <div class="byline">Developed by <b>BasMan Technology</b></div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar topbar-flex">
+        <div class="title">@ViewData["Title"]</div>
+        <div class="topbar-user">
+          <span class="user-chip"><i class="bi bi-person-circle"></i> @currentUser</span>
+          <span class="role-chip">@currentRole</span>
+          <a class="btn" asp-page="/Account/Logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+      </header>
+      <section class="page">
+        @RenderBody()
+      </section>
+      <footer class="footer">© @DateTime.Now.Year BasMan Technology</footer>
+    </main>
+  </div>
+}
+
+  <script src="~/js/invoxa-charts.js" asp-append-version="true"></script>
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

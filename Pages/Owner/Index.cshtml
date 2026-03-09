@@ -1,0 +1,58 @@
+@page
+@model Invoxa.Web.Pages.Owner.IndexModel
+@{
+    ViewData["Title"] = "Super Admin";
+}
+
+<div class="card-grid four">
+  <div class="card stat-card"><div class="muted">Total Companies</div><div class="stat-value">@Model.TotalCompanies</div></div>
+  <div class="card stat-card"><div class="muted">Total Users</div><div class="stat-value">@Model.TotalUsers</div></div>
+  <div class="card stat-card"><div class="muted">Total Invoices</div><div class="stat-value">@Model.TotalInvoices</div></div>
+  <div class="card stat-card"><div class="muted">Paid Revenue</div><div class="stat-value">@Model.PaidRevenue.ToString("0.##")</div></div>
+</div>
+
+
+<div class="card-grid four" style="margin-top:16px;">
+  <div class="card stat-card"><div class="muted">Active Companies</div><div class="stat-value">@Model.ActiveCompanies</div></div>
+  <div class="card stat-card"><div class="muted">Pending Approval</div><div class="stat-value">@Model.PendingCompanies</div></div>
+</div>
+
+<div class="card-grid three" style="margin-top:16px;">
+  <a class="card" asp-page="/Owner/Companies">
+    <h3>Companies</h3>
+    <p class="muted">View all signed-up companies and their usage.</p>
+  </a>
+  <a class="card" asp-page="/Owner/Users">
+    <h3>Users</h3>
+    <p class="muted">View platform users, roles, and last login activity.</p>
+  </a>
+  <a class="card" asp-page="/Owner/Invoices">
+    <h3>Invoices</h3>
+    <p class="muted">Review invoice activity across all companies.</p>
+  </a>
+</div>
+
+<div class="card" style="margin-top:16px;">
+  <div class="section-title">Recent Companies</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Created</th>
+        <th>Users</th>
+        <th>Invoices</th>
+      </tr>
+    </thead>
+    <tbody>
+    @foreach (var company in Model.RecentCompanies)
+    {
+      <tr>
+        <td>@company.Name</td>
+        <td>@company.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</td>
+        <td>@company.UserCount</td>
+        <td>@company.InvoiceCount</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>

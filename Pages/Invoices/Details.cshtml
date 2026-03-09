@@ -1,0 +1,82 @@
+@page "{id:guid}"
+@model Invoxa.Web.Pages.Invoices.DetailsModel
+@{ ViewData["Title"] = "Invoice Details"; }
+@{
+  var statusClass = Model.Invoice.Status switch
+  {
+    Invoxa.Web.Domain.InvoiceStatus.Paid => "badge-paid",
+    Invoxa.Web.Domain.InvoiceStatus.Overdue => "badge-overdue",
+    Invoxa.Web.Domain.InvoiceStatus.Draft => "badge-draft",
+    _ => "badge-pending"
+  };
+}
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:18px;font-weight:900;">@Model.Invoice.InvoiceNumber</div>
+      <div style="color:#64748b">Client: @Model.Invoice.Client!.Name</div>
+      <div style="color:#64748b">Due: @Model.Invoice.DueDate.ToString("yyyy-MM-dd") • Status: <span class="badge @statusClass">@Model.Invoice.Status</span></div>
+    </div>
+    <div class="stack actions">
+      <a class="btn icon-btn" asp-page="/Invoices/Edit" asp-route-id="@Model.Invoice.Id" title="Edit"><i class="bi bi-pencil-square"></i></a>
+      <form method="post" asp-page-handler="MarkPaid" asp-route-id="@Model.Invoice.Id"><button class="btn icon-btn paid-btn" type="submit" title="Mark Paid + send payment email"><i class="bi bi-check2-circle"></i></button></form>
+      <form method="post" asp-page-handler="MarkUnpaid" asp-route-id="@Model.Invoice.Id"><button class="btn icon-btn reset-btn" type="submit" title="Mark Unpaid"><i class="bi bi-arrow-counterclockwise"></i></button></form>
+      <form method="post" asp-page-handler="Download" asp-route-id="@Model.Invoice.Id"><button class="btn icon-btn download-btn" type="submit" title="Download PDF"><i class="bi bi-download"></i></button></form>
+      <form method="post" asp-page-handler="SendEmail" asp-route-id="@Model.Invoice.Id"><button class="btn icon-btn email-btn" type="submit" title="Send Email"><i class="bi bi-envelope"></i></button></form>
+      <form method="post" asp-page-handler="SendWhatsApp" asp-route-id="@Model.Invoice.Id"><button class="btn icon-btn whatsapp-btn" type="submit" title="Send WhatsApp"><i class="bi bi-whatsapp"></i></button></form>
+      <form method="post" asp-page-handler="CreatePaymentLink" asp-route-id="@Model.Invoice.Id"><button class="btn" type="submit" title="Create payment link"><i class="bi bi-credit-card"></i></button></form>
+    </div>
+  </div>
+
+  <div style="height:10px"></div>
+  <div class="card" style="background:#f8fafc">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-weight:800">Client portal</div>
+        <div style="color:#64748b">Public invoice link: <a href="/i/@Model.Invoice.PublicToken" target="_blank">/i/@Model.Invoice.PublicToken</a></div>
+      </div>
+      @if (!string.IsNullOrWhiteSpace(Model.Invoice.PaymentLink))
+      {
+        <a class="btn primary" href="@Model.Invoice.PaymentLink" target="_blank"><i class="bi bi-credit-card"></i> Pay link</a>
+      }
+    </div>
+
+    <div style="height:10px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div style="width:100%;color:#64748b;font-size:13px;">Tip: when you mark this invoice as paid, Invoxa will automatically email the client a payment confirmation with the paid PDF.</div>
+      <form method="post" asp-page-handler="ToggleRecurringTemplate">
+        <input type="hidden" name="id" value="@Model.Invoice.Id" />
+        <input type="hidden" name="enable" value="true" />
+        <input type="hidden" name="intervalDays" value="30" />
+        <button class="btn" type="submit" title="Enable monthly recurring (30 days)"><i class="bi bi-arrow-repeat"></i> Enable recurring</button>
+      </form>
+      <form method="post" asp-page-handler="ToggleRecurringTemplate">
+        <input type="hidden" name="id" value="@Model.Invoice.Id" />
+        <input type="hidden" name="enable" value="false" />
+        <button class="btn" type="submit" title="Disable recurring"><i class="bi bi-x-circle"></i> Disable recurring</button>
+      </form>
+      @if (Model.Invoice.IsRecurringTemplate && Model.Invoice.RecurrenceEnabled)
+      {
+        <div class="small" style="color:#64748b">Recurring every @Model.Invoice.RecurrenceIntervalDays days • Next: @Model.Invoice.NextOccurrenceDate</div>
+      }
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+  <table class="table">
+    <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Total</th></tr></thead>
+    <tbody>
+    @foreach (var it in Model.Invoice.Items)
+    { <tr><td>@it.Description</td><td>@it.Quantity</td><td>@it.UnitPrice</td><td>@it.LineTotal</td></tr> }
+    </tbody>
+  </table>
+
+  <div style="height:10px"></div>
+  <div style="text-align:right;font-weight:900;">Total: @Model.Invoice.Total.ToString("0.00")</div>
+
+  @if (!string.IsNullOrWhiteSpace(Model.Message))
+  {
+    <div style="height:10px"></div>
+    <div class="notice">@Model.Message</div>
+  }
+</div>

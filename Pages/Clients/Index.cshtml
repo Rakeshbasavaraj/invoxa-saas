@@ -1,0 +1,50 @@
+@page
+@model Invoxa.Web.Pages.Clients.IndexModel
+@{ ViewData["Title"] = "Clients"; }
+<div class="stack">
+  <a class="btn primary" asp-page="/Clients/Create">Add Client</a>
+</div>
+<div style="height:10px"></div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+  <div class="alert success">@Model.StatusMessage</div>
+  <div style="height:10px"></div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+  <div class="alert error">@Model.ErrorMessage</div>
+  <div style="height:10px"></div>
+}
+
+<div class="card" style="padding:0">
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Portal</th>
+      <th style="width:140px">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  @foreach (var c in Model.Clients)
+  {
+    <tr>
+      <td>@c.Name</td>
+      <td>@c.Email</td>
+      <td>@c.Phone</td>
+      <td><a href="/c/@c.PortalToken" target="_blank">Open</a></td>
+      <td>
+        <form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete client @c.Name?');">
+          <input type="hidden" name="clientId" value="@c.Id" />
+          <button type="submit" class="btn danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+  }
+  </tbody>
+</table>
+</div>

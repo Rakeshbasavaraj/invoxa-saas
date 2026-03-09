@@ -1,0 +1,40 @@
+@page
+@model Invoxa.Web.Pages.Owner.InvoicesModel
+@{
+    ViewData["Title"] = "Invoices Overview";
+}
+
+<div class="card-grid three">
+  <div class="card stat-card"><div class="muted">Draft</div><div class="stat-value">@Model.DraftCount</div></div>
+  <div class="card stat-card"><div class="muted">Unpaid</div><div class="stat-value">@Model.UnpaidCount</div></div>
+  <div class="card stat-card"><div class="muted">Paid</div><div class="stat-value">@Model.PaidCount</div></div>
+</div>
+
+<div class="card" style="margin-top:16px;">
+  <div class="section-title">Recent Invoices</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>Company</th>
+        <th>Client</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Invoices)
+    {
+      <tr>
+        <td>@item.InvoiceNumber</td>
+        <td>@item.CompanyName</td>
+        <td>@item.ClientName</td>
+        <td>@item.Amount.ToString("0.##")</td>
+        <td>@item.Status</td>
+        <td>@item.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>

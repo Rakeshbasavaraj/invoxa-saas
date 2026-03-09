@@ -1,0 +1,67 @@
+@page
+@model Invoxa.Web.Pages.Settings.EmailTemplatesModel
+@{
+    ViewData["Title"] = "Email Templates";
+}
+
+<div class="card">
+  <div style="font-weight:900;font-size:22px;">Email Templates</div>
+  <div class="muted" style="margin-top:6px;">Supported variables: {{ClientName}}, {{InvoiceNumber}}, {{Amount}}, {{DueDate}}, {{CompanyName}}, {{PayNowLink}}, {{ViewInvoiceLink}}</div>
+</div>
+
+<div style="height:12px"></div>
+
+<form method="post" class="form">
+  @if (!string.IsNullOrWhiteSpace(Model.Message))
+  {
+    <div class="notice" style="margin-bottom:12px;">@Model.Message</div>
+  }
+
+  @{
+    void Section(string title, string subjectName, string bodyName) { }
+  }
+
+  <div class="card">
+    <div style="font-weight:800;margin-bottom:8px;">Invoice Sent</div>
+    <div class="row">
+      <div class="input" style="grid-column:1 / span 2"><label>Subject</label><input asp-for="InvoiceSentSubject" /></div>
+    </div>
+    <div class="row">
+      <div class="input" style="grid-column:1 / span 2"><label>Body</label><textarea asp-for="InvoiceSentBody" rows="6"></textarea></div>
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+  <div class="card">
+    <div style="font-weight:800;margin-bottom:8px;">Upcoming Due</div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Subject</label><input asp-for="UpcomingDueSubject" /></div></div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Body</label><textarea asp-for="UpcomingDueBody" rows="6"></textarea></div></div>
+  </div>
+
+  <div style="height:12px"></div>
+  <div class="card">
+    <div style="font-weight:800;margin-bottom:8px;">Due Today</div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Subject</label><input asp-for="DueTodaySubject" /></div></div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Body</label><textarea asp-for="DueTodayBody" rows="6"></textarea></div></div>
+  </div>
+
+  <div style="height:12px"></div>
+  <div class="card">
+    <div style="font-weight:800;margin-bottom:8px;">Overdue</div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Subject</label><input asp-for="OverdueSubject" /></div></div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Body</label><textarea asp-for="OverdueBody" rows="6"></textarea></div></div>
+  </div>
+
+  <div style="height:12px"></div>
+  <div class="card">
+    <div style="font-weight:800;margin-bottom:8px;">Payment Received</div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Subject</label><input asp-for="PaymentReceivedSubject" /></div></div>
+    <div class="row"><div class="input" style="grid-column:1 / span 2"><label>Body</label><textarea asp-for="PaymentReceivedBody" rows="6"></textarea></div></div>
+  </div>
+
+  <div style="height:12px"></div>
+  <div class="stack">
+    <button class="btn primary" type="submit">Save Templates</button>
+    <a class="btn" asp-page="/Index">Back</a>
+  </div>
+</form>

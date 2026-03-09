@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Invoxa</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root{
+            --bg1:#eef4ff;--bg2:#f8fbff;--panel:#ffffff;--text:#0f172a;--muted:#64748b;
+            --border:#dbe5f0;--primary:#2563eb;--primary2:#3b82f6;--green:#16a34a;--green2:#22c55e;
+            --danger-bg:#fef2f2;--danger-border:#fecaca;--danger-text:#b91c1c;
+            --ok-bg:#eff6ff;--ok-border:#bfdbfe;--ok-text:#1d4ed8;
+            --shadow:0 24px 60px rgba(15,23,42,.14);
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{margin:0;font-family:Segoe UI,system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(135deg,var(--bg1),var(--bg2));}
+        .auth-shell{min-height:100%;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+        .auth-card{width:100%;max-width:520px;background:var(--panel);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:var(--shadow)}
+        .auth-header{padding:22px 26px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #edf2f7;background:linear-gradient(180deg,#ffffff,#f8fbff)}
+        .brand-badge{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;background:linear-gradient(135deg,#2563eb,#22c55e)}
+        .brand-name{font-size:28px;font-weight:800;letter-spacing:.2px}
+        .auth-body{padding:28px 26px 30px}
+        .auth-title{margin:0 0 6px 0;font-size:34px;font-weight:800}
+        .auth-subtitle{margin:0 0 22px 0;color:var(--muted);font-size:15px}
+        .form-group{margin-bottom:16px}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        label{display:block;margin:0 0 7px 0;font-size:14px;font-weight:600;color:#334155}
+        input[type="text"],input[type="email"],input[type="password"]{width:100%;padding:14px 15px;border-radius:14px;border:1px solid var(--border);background:#fff;font-size:16px;outline:none;transition:border-color .15s ease, box-shadow .15s ease}
+        input[type="text"]:focus,input[type="email"]:focus,input[type="password"]:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+        .check-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 18px 0}
+        .check-inline{display:flex;align-items:center;gap:9px;color:#334155;font-size:15px}
+        .check-inline input{width:17px;height:17px}
+        .muted{color:var(--muted);font-size:14px}
+        .btn-main{width:100%;border:none;border-radius:14px;padding:15px 18px;color:#fff;font-size:18px;font-weight:800;cursor:pointer;background:linear-gradient(90deg,var(--primary),var(--primary2));box-shadow:0 10px 22px rgba(37,99,235,.18)}
+        .btn-main.signup{background:linear-gradient(90deg,var(--green),var(--green2));box-shadow:0 10px 22px rgba(34,197,94,.18)}
+        .footer-link{margin-top:18px;text-align:center;color:#475569;font-size:15px}
+        .footer-link a{color:var(--primary);font-weight:800;text-decoration:none}
+        .demo-box,.notice-box,.validation-box{margin-bottom:16px;padding:12px 14px;border-radius:14px;font-size:14px}
+        .demo-box,.notice-box{background:var(--ok-bg);border:1px solid var(--ok-border);color:var(--ok-text)}
+        .validation-box{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger-text)}
+        .field-error{display:block;margin-top:6px;color:#b91c1c;font-size:13px}
+        .terms-row{margin:8px 0 18px 0}
+        .validation-summary-errors ul{margin:0;padding-left:18px}
+        .validation-summary-errors li{margin:4px 0}
+        @@media (max-width:640px){.auth-card{max-width:100%;border-radius:22px}.auth-body{padding:22px 18px 24px}.auth-title{font-size:28px}.form-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <main class="auth-shell">
+        @RenderBody()
+    </main>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

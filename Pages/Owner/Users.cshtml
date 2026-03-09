@@ -1,0 +1,32 @@
+@page
+@model Invoxa.Web.Pages.Owner.UsersModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="card">
+  <div class="section-title">Platform Users</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Company</th>
+        <th>Role</th>
+        <th>Last Login</th>
+      </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Users)
+    {
+      <tr>
+        <td>@item.FullName</td>
+        <td>@item.Email</td>
+        <td>@item.CompanyName</td>
+        <td>@item.Role</td>
+        <td>@(item.LastLoginAtUtc?.ToLocalTime().ToString("dd MMM yyyy HH:mm") ?? "-")</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>

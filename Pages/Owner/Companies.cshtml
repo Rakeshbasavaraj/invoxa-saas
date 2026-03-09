@@ -1,0 +1,91 @@
+@page
+@model Invoxa.Web.Pages.Owner.CompaniesModel
+@{
+    ViewData["Title"] = "Companies";
+}
+
+<div class="card">
+  <div class="section-title">All Companies</div>
+  @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+  {
+    <div class="alert-success" style="margin-bottom:12px;">@Model.StatusMessage</div>
+  }
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Created</th>
+        <th>Status</th>
+        <th>Plan</th>
+        <th>Users</th>
+        <th>Clients</th>
+        <th>Invoices</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Companies)
+    {
+      <tr>
+        <td>@item.Name</td>
+        <td>@item.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</td>
+<td>@item.ApprovalStatus</td>
+        <td>@item.PlanKey<br /><span class="muted">@item.InvoiceLimit inv / @item.ClientLimit clients</span></td>
+        <td>@item.UserCount</td>
+        <td>@item.ClientCount</td>
+        <td>@item.InvoiceCount</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            @if (!string.Equals(item.ApprovalStatus, "Active", StringComparison.OrdinalIgnoreCase))
+            {
+              <form method="post" asp-page-handler="Approve">
+                <input type="hidden" name="id" value="@item.Id" />
+                <button type="submit" class="btn primary">Approve</button>
+              </form>
+            }
+            @if (!string.Equals(item.ApprovalStatus, "Suspended", StringComparison.OrdinalIgnoreCase))
+            {
+              <form method="post" asp-page-handler="Suspend">
+                <input type="hidden" name="id" value="@item.Id" />
+                <button type="submit" class="btn">Suspend</button>
+              </form>
+            }
+            <form method="post" asp-page-handler="SetPlan" style="display:flex;gap:6px;align-items:center;">
+              <input type="hidden" name="id" value="@item.Id" />
+              <select name="planKey" class="input" style="width:110px;">
+                @if (item.PlanKey == "Free")
+                {
+                  <option value="Free" selected>Free</option>
+                }
+                else
+                {
+                  <option value="Free">Free</option>
+                }
+
+                @if (item.PlanKey == "Starter")
+                {
+                  <option value="Starter" selected>Starter</option>
+                }
+                else
+                {
+                  <option value="Starter">Starter</option>
+                }
+
+                @if (item.PlanKey == "Pro")
+                {
+                  <option value="Pro" selected>Pro</option>
+                }
+                else
+                {
+                  <option value="Pro">Pro</option>
+                }
+              </select>
+              <button type="submit" class="btn">Save</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>

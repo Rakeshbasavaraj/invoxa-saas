@@ -1,0 +1,274 @@
+@page
+@model Invoxa.Web.Pages.IndexModel
+@{
+    ViewData["Title"] = Model.IsAuthenticated ? "Dashboard" : "Invoxa – Smart Invoicing for Small Business";
+}
+
+@if (!Model.IsAuthenticated)
+{
+<div class="landing-3d-shell">
+  @if (!string.IsNullOrWhiteSpace(Model.Message))
+  {
+    <div class="notice-box" style="max-width:1200px;margin:0 auto 16px auto;">@Model.Message</div>
+  }
+  <section class="landing-3d-hero card">
+    <div class="landing-copy">
+      <div class="landing-badge">Built for freelancers and small businesses</div>
+      <h1 class="landing-title">Send invoices, collect payments, and follow up automatically.</h1>
+      <p class="landing-subtitle">Invoxa helps freelancers and small businesses create invoices, send PDF/email reminders, and accept Stripe payments from one simple workspace.</p>
+      <div class="landing-actions">
+        <a class="btn primary" asp-page="/Account/Register">Start Free</a>
+        <a class="btn" asp-page="/Account/Login">Login</a>
+      </div>
+      <div class="landing-trust">
+        <span>✔ No credit card required</span>
+        <span>✔ Secure payments powered by Stripe</span>
+      </div>
+    </div>
+    <div class="landing-visual-wrap">
+      <img class="landing-visual hero" src="/landing-hero-3d.png" alt="Invoxa 3D dashboard preview" />
+    </div>
+  </section>
+
+  <section class="landing-cards-3d">
+    <div class="card feature-3d"><div class="feature-icon">📄</div><h3>Create fast</h3><p>Generate invoice numbers automatically, add line items, and export professional PDF invoices.</p></div>
+    <div class="card feature-3d"><div class="feature-icon">💳</div><h3>Get paid</h3><p>Share secure invoice links and collect payments through Stripe checkout.</p></div>
+    <div class="card feature-3d"><div class="feature-icon">⏰</div><h3>Follow up</h3><p>Track overdue invoices, recurring templates, reminders, and activity in one place.</p></div>
+  </section>
+
+  <section class="landing-showcase card">
+    <div>
+      <div class="section-title">See Invoxa in action</div>
+      <p class="landing-subcopy">One workspace for clients, invoices, reminders, logs, templates, and online payments.</p>
+      <div class="landing-mini-metrics">
+        <div class="landing-metric"><strong>10 min</strong><span>to create your first invoice</span></div>
+        <div class="landing-metric"><strong>3 clicks</strong><span>to send and collect payment</span></div>
+        <div class="landing-metric"><strong>1 workspace</strong><span>for clients, invoices, logs, and templates</span></div>
+      </div>
+    </div>
+    <div class="landing-visual-wrap secondary">
+      <img class="landing-visual secondary" src="/landing-pricing-3d.png" alt="Invoxa pricing and dashboard concept" />
+    </div>
+  </section>
+
+  <section class="card pricing-wrap pricing-3d-wrap">
+    <div class="section-title center">Simple pricing that’s great for freelancers and small businesses</div>
+    <div class="pricing-grid pricing-grid-3d">
+      <div class="price-card">
+        <div class="plan">Free</div>
+        <div class="price">$0<span>/month</span></div>
+        <ul>
+          <li>10 invoices</li>
+          <li>5 clients</li>
+          <li>Public invoice links</li>
+          <li>PDF download</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">Most Popular</div>
+        <div class="plan">Starter</div>
+        <div class="price">$9<span>/month</span></div>
+        <ul>
+          <li>100 invoices</li>
+          <li>50 clients</li>
+          <li>Email reminders</li>
+          <li>Stripe payments</li>
+          <li>Recurring invoices</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="plan">Pro</div>
+        <div class="price">$19<span>/month</span></div>
+        <ul>
+          <li>Unlimited invoices</li>
+          <li>Unlimited clients</li>
+          <li>Recurring invoices</li>
+          <li>Custom branding</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+    </div>
+    <div class="landing-bottom-cta">
+      <div class="landing-bottom-title">Start free today and send your first invoice in minutes.</div>
+      <div class="landing-actions center-actions">
+        <a class="btn primary" asp-page="/Account/Register">Start Free</a>
+        <a class="btn" asp-page="/Account/Login">Login</a>
+      </div>
+      <div class="landing-footer-mini">
+        <span>Secure Stripe checkout</span>
+        <span>PDF invoices</span>
+        <span>Email reminders</span>
+        <span>Built by BasMan Technology</span>
+      </div>
+    </div>
+  </section>
+</div>
+}
+else
+{
+<div class="dash-top dash-top-one-line">
+  <a class="card kpi-card kpi-create dash-create-card" asp-page="/Invoices/Create" title="Create Invoice">
+    <div class="kpi"><i class="bi bi-plus-circle"></i> Create Invoice</div>
+    <div class="kpiv"></div>
+  </a>
+
+  <!-- KPI cards (clickable) -->
+  <a class="card kpi-card kpi-blue" asp-page="/Invoices/Index" asp-route-status="Paid" title="View Paid invoices">
+    <div class="kpi">Total Revenue</div><div class="kpiv">@Model.TotalRevenue.ToString("0.00")</div>
+  </a>
+
+  <a class="card kpi-card kpi-purple" asp-page="/Invoices/Index" asp-route-status="Paid" title="View Paid invoices (this month)">
+    <div class="kpi">This Month</div><div class="kpiv">@Model.ThisMonthRevenue.ToString("0.00")</div>
+  </a>
+
+  <a class="card kpi-card kpi-amber" asp-page="/Invoices/Index" asp-route-status="Unpaid" title="View Unpaid invoices">
+    <div class="kpi">Pending</div><div class="kpiv">@Model.PendingAmount.ToString("0.00")</div>
+  </a>
+
+  <a class="card kpi-card kpi-red" asp-page="/Invoices/Index" asp-route-status="Overdue" title="View Overdue invoices">
+    <div class="kpi">Overdue</div>
+    <div class="kpiv">@Model.OverdueCount <span style="font-size:12px;font-weight:700;opacity:.9;">(@Model.OverdueAmount.ToString("0.00"))</span></div>
+  </a>
+
+  <a class="card kpi-card kpi-green" asp-page="/Clients/Index" title="View Clients">
+    <div class="kpi">Clients</div><div class="kpiv">@Model.ClientCount</div>
+  </a>
+</div>
+
+<div style="height:14px"></div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div style="font-weight:800;">Overview</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <a class="btn" asp-page="/Invoices/Create"><i class="bi bi-plus-circle"></i> Create</a>
+      <a class="btn" asp-page="/Invoices/Index"><i class="bi bi-receipt"></i> Invoices</a>
+      <a class="btn" asp-page="/Clients/Index"><i class="bi bi-people"></i> Clients</a>
+      <a class="btn" asp-page="/Logs/Index"><i class="bi bi-clock-history"></i> Activity Log</a>
+    </div>
+  </div>
+
+  <div style="height:10px"></div>
+
+  <div class="dash-charts">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Revenue (Last @Model.Days days)</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select class="input" style="width:130px;" onchange="location.href='/?days=' + this.value;">
+            @if (Model.Days == 7)
+            {
+              <option value="7" selected>Last 7 days</option>
+            }
+            else
+            {
+              <option value="7">Last 7 days</option>
+            }
+
+            @if (Model.Days == 14)
+            {
+              <option value="14" selected>Last 14 days</option>
+            }
+            else
+            {
+              <option value="14">Last 14 days</option>
+            }
+
+            @if (Model.Days == 30)
+            {
+              <option value="30" selected>Last 30 days</option>
+            }
+            else
+            {
+              <option value="30">Last 30 days</option>
+            }
+          </select>
+          <button type="button" class="btn icon-btn" title="Refresh" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
+      <canvas id="revChart" class="chart-canvas" height="260" style="width:100%;height:260px;"></canvas>
+    </div>
+
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Invoices by Status</div>
+        <a class="btn" asp-page="/Invoices/Index" title="Manage invoices"><i class="bi bi-sliders"></i> Manage</a>
+      </div>
+      <canvas id="statusChart" class="chart-canvas" height="260" style="width:100%;height:260px;"></canvas>
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="dash-charts dash-charts-3">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Top Clients (Paid)</div>
+        <a class="btn" asp-page="/Clients/Index" title="View clients"><i class="bi bi-people"></i> View</a>
+      </div>
+      <canvas id="topClientsChart" class="chart-canvas" height="260" style="width:100%;height:260px;"></canvas>
+    </div>
+  </div>
+</div>
+
+<div style="height:14px"></div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div style="font-weight:800;">Recent Invoices</div>
+    <a class="btn primary" asp-page="/Invoices/Create">Create Invoice</a>
+  </div>
+  <div style="height:10px"></div>
+  <table class="table">
+    <thead><tr><th>Invoice</th><th>Client</th><th>Due</th><th>Status</th><th>Total</th></tr></thead>
+    <tbody>
+    @foreach (var inv in Model.RecentInvoices)
+    {
+      var cls = inv.Status?.Equals("Paid", StringComparison.OrdinalIgnoreCase) == true ? "badge-paid"
+              : inv.Status?.Equals("Overdue", StringComparison.OrdinalIgnoreCase) == true ? "badge-overdue"
+              : inv.Status?.Equals("Draft", StringComparison.OrdinalIgnoreCase) == true ? "badge-draft"
+              : "badge-unpaid";
+      <tr>
+        <td><a asp-page="/Invoices/Details" asp-route-id="@inv.Id">@inv.InvoiceNumber</a></td>
+        <td>@inv.ClientName</td>
+        <td>@inv.DueDate</td>
+        <td><span class="badge @cls">@inv.Status</span></td>
+        <td>@inv.Total.ToString("0.00")</td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>
+
+}
+
+@section Scripts {
+@if (Model.IsAuthenticated)
+{
+<script>
+  // IMPORTANT: output JSON as raw, otherwise Razor HTML-encodes quotes into &quot; and breaks JS (Unexpected token '&').
+  const revLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueLabels));
+  const revValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RevenueValues));
+  const statusCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusCounts));
+  const topClientLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopClientLabels));
+  const topClientValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopClientValues));
+
+  function drawDashboardCharts(){
+    if (!window.InvoxaCharts) return;
+
+    window.InvoxaCharts.drawLineChart('revChart', revLabels, revValues, 'Revenue');
+
+    const preferred = ['Paid','Unpaid','Overdue','Draft'];
+    const sLabels = preferred.filter(k => statusCounts[k] !== undefined).concat(Object.keys(statusCounts).filter(k => !preferred.includes(k)));
+    const sValues = sLabels.map(k => statusCounts[k] ?? 0);
+    window.InvoxaCharts.drawDoughnutChart('statusChart', sLabels, sValues);
+
+    window.InvoxaCharts.drawBarChart('topClientsChart', topClientLabels, topClientValues, 'Paid');
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(() => requestAnimationFrame(drawDashboardCharts), 0);
+  });
+</script>
+}
+}

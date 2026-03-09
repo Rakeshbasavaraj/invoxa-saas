@@ -1,0 +1,17 @@
+@page
+@model ErrorModel
+@{ ViewData["Title"] = "Error"; }
+<h2>Something went wrong.</h2>
+<p>Please check terminal logs.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+  <div class="notice" style="margin-top:12px">
+    <strong>Error:</strong> @Model.ErrorMessage
+  </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorStack))
+{
+  <pre style="margin-top:12px; white-space:pre-wrap; background:#111; color:#eee; padding:12px; border-radius:10px; font-size:12px">@Model.ErrorStack</pre>
+}

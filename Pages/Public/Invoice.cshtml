@@ -1,0 +1,137 @@
+@page "/i/{token}"
+@model Invoxa.Web.Pages.Public.InvoiceModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Invoice";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.PaymentMessage))
+{
+    <div style="margin-bottom:12px;padding:14px 16px;border:1px solid #fde68a;background:#fffbeb;border-radius:14px;color:#92400e;">
+        <strong><i class="bi bi-info-circle"></i> Payment status:</strong> @Model.PaymentMessage
+    </div>
+}
+
+@if (Model.Invoice == null)
+{
+    <div class="card">
+        <div style="font-weight:800;">Invoice not found</div>
+        <div style="color:#6b7280;margin-top:6px;">The link may be invalid or expired.</div>
+    </div>
+}
+else
+{
+
+    @if (Model.Invoice.Status == Invoxa.Web.Domain.InvoiceStatus.Paid)
+    {
+        <div class="card" style="background:#ecfdf5;border:1px solid #86efac;">
+            <div style="font-weight:900;color:#166534;"><i class="bi bi-check-circle-fill"></i> Payment received</div>
+            <div style="color:#166534;margin-top:6px;">This invoice has been marked as paid.@(Model.Invoice.PaidAtUtc.HasValue ? $" Paid on {Model.Invoice.PaidAtUtc.Value:yyyy-MM-dd HH:mm} UTC." : "")</div>
+        </div>
+        <div style="height:12px"></div>
+    }
+
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+            <div style="font-weight:900;font-size:18px;">@Model.CompanyName</div>
+            <div style="color:#6b7280;">Invoice <b>@Model.Invoice.InvoiceNumber</b></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <form method="post" asp-page-handler="Download" asp-route-token="@Model.Token">
+                <button class="btn primary" type="submit"><i class="bi bi-download"></i> Download PDF</button>
+            </form>
+            @if (Model.Invoice.Status == Invoxa.Web.Domain.InvoiceStatus.Paid)
+            {
+                <span class="btn" style="background:#dcfce7;color:#166534;border:1px solid #86efac;cursor:default;"><i class="bi bi-check-circle"></i> Already Paid</span>
+            }
+            else if (!string.IsNullOrWhiteSpace(Model.Invoice.PaymentLink))
+            {
+                <a class="btn" style="background:#16a34a;color:white" href="@Model.Invoice.PaymentLink" target="_blank"><i class="bi bi-credit-card"></i> Pay now</a>
+            }
+        </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+
+    <div class="card" style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:16px;align-items:start;">
+        <div>
+            <div style="font-size:24px;font-weight:900;">Client Payment Portal</div>
+            <div style="color:#6b7280;margin-top:6px;">Review your invoice, download the PDF, or complete payment securely.</div>
+            <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+                @if (Model.Invoice.Total <= 0)
+                {
+                    <span class="muted">No payment required for this invoice.</span>
+                }
+                else if (Model.Invoice.Status == Invoxa.Web.Domain.InvoiceStatus.Paid)
+                {
+                    <span class="muted" style="color:#166534;font-weight:700;">This invoice is already paid.</span>
+                }
+                else if (!string.IsNullOrWhiteSpace(Model.Invoice.PaymentLink))
+                {
+                    <a class="btn" style="background:#16a34a;color:white" href="@Model.Invoice.PaymentLink" target="_blank"><i class="bi bi-credit-card"></i> Pay Now</a>
+                }
+                else
+                {
+                    <span class="muted">Payment link is not available yet. Please contact the company admin or use Download PDF.</span>
+                }
+                <form method="post" asp-page-handler="Download" asp-route-token="@Model.Token">
+                    <button class="btn primary" type="submit"><i class="bi bi-download"></i> Download PDF</button>
+                </form>
+            </div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px;">
+            <div style="font-size:13px;color:#6b7280;">Amount Due</div>
+            <div style="font-size:28px;font-weight:900;margin-top:6px;">@Model.Invoice.Total.ToString("0.00")</div>
+            <div style="margin-top:10px;color:#6b7280;">Due Date: @Model.Invoice.DueDate</div>
+            <div style="margin-top:10px;">Status: <span class="badge">@Model.Invoice.Status</span></div>
+            @if (!string.IsNullOrWhiteSpace(Model.Invoice.Client?.Email) || !string.IsNullOrWhiteSpace(Model.Invoice.Client?.Phone))
+            {
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb;">
+                    <div style="font-weight:800;">Contact</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Invoice.Client?.Email)) { <div style="color:#6b7280">@Model.Invoice.Client!.Email</div> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Invoice.Client?.Phone)) { <div style="color:#6b7280">@Model.Invoice.Client!.Phone</div> }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="card">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="min-width:220px;">
+                <div style="font-weight:800;">Bill To</div>
+                <div>@Model.Invoice.Client?.Name</div>
+                @if (!string.IsNullOrWhiteSpace(Model.Invoice.Client?.Email)) { <div style="color:#6b7280">@Model.Invoice.Client!.Email</div> }
+                @if (!string.IsNullOrWhiteSpace(Model.Invoice.Client?.Phone)) { <div style="color:#6b7280">@Model.Invoice.Client!.Phone</div> }
+            </div>
+            <div style="min-width:220px;">
+                <div style="font-weight:800;">Dates</div>
+                <div>Issue: @Model.Invoice.IssueDate</div>
+                <div>Due: @Model.Invoice.DueDate</div>
+                <div>Status: <span class="badge">@Model.Invoice.Status</span></div>
+            </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <table class="table">
+            <thead><tr><th>Item</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Unit</th><th style="text-align:right;">Total</th></tr></thead>
+            <tbody>
+            @foreach (var it in Model.Invoice.Items)
+            {
+                <tr>
+                    <td>@it.Description</td>
+                    <td style="text-align:right;">@it.Quantity</td>
+                    <td style="text-align:right;">@it.UnitPrice.ToString("0.00")</td>
+                    <td style="text-align:right;">@it.LineTotal.ToString("0.00")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;font-weight:900;">
+            Total: @Model.Invoice.Total.ToString("0.00")
+        </div>
+    </div>
+}

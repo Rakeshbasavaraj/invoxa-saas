@@ -1,0 +1,64 @@
+@page
+@model Invoxa.Web.Pages.Account.LoginModel
+@{
+    Layout = "/Pages/Shared/_AuthLayout.cshtml";
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-card">
+    <div class="auth-header">
+        <div class="brand-badge"><i class="bi bi-check2-square"></i></div>
+        <div class="brand-name">Invoxa</div>
+    </div>
+
+    <div class="auth-body">
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Login to manage invoices, clients, and company settings.</p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Message))
+        {
+            <div class="notice-box">@Model.Message</div>
+        }
+
+        @if (!ViewContext.ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="ModelOnly" class="validation-box"></div>
+        }
+
+        <div class="demo-box">
+            Demo login: <strong>admin@invoxa.local</strong> / <strong>Admin@123</strong>
+        </div>
+
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" type="email" placeholder="Enter email address" />
+                <span asp-validation-for="Input.Email" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" type="password" placeholder="Enter password" />
+                <span asp-validation-for="Input.Password" class="field-error"></span>
+            </div>
+
+            <div class="check-row">
+                <label class="check-inline">
+                    <input asp-for="Input.RememberMe" />
+                    <span>Remember me</span>
+                </label>
+                <a asp-page="/Account/ForgotPassword" class="muted" style="text-decoration:none;font-weight:600;">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn-main">Login</button>
+        </form>
+
+        <div class="footer-link">
+            Don’t have an account? <a asp-page="/Account/Register">Sign Up</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

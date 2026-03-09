@@ -1,0 +1,298 @@
+@page
+@model Invoxa.Web.Pages.Settings.CompanyModel
+@{ ViewData["Title"] = "Company Settings"; }
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+  <div style="height:10px"></div>
+  <div class="notice">@Model.Message</div>
+}
+
+<div id="companyTab" class="settings-panel active">
+<form method="post" asp-page-handler="SaveCompany" enctype="multipart/form-data" class="form">
+  <div class="row">
+    <div class="input"><label>Company Name</label><input asp-for="Name" required /></div>
+    <div class="input"><label>VAT Number (optional)</label><input asp-for="VatNumber" /></div>
+  </div>
+
+  <div class="row">
+    <div class="input"><label>Address Line 1</label><input asp-for="AddressLine1" /></div>
+    <div class="input"><label>Address Line 2</label><input asp-for="AddressLine2" /></div>
+  </div>
+
+  <div class="row">
+    <div class="input"><label>City</label><input asp-for="City" /></div>
+    <div class="input"><label>Country</label><input asp-for="Country" /></div>
+  </div>
+
+  <div style="height:10px"></div>
+
+  <div class="row">
+    <div class="input">
+      <label>Tax (Country Preset)</label>
+      <select asp-for="TaxPresetKey" id="taxPreset">
+        <option value="kuwait_vat">Kuwait (VAT 0%)</option>
+        <option value="india_gst">India (GST 18%)</option>
+        <option value="us_sales">USA (Sales Tax 0% default)</option>
+      </select>
+      <div class="muted" style="margin-top:6px">Pick a preset to auto-fill tax label & rate. You can edit the rate anytime.</div>
+    </div>
+
+    <div class="input">
+      <label>Enable Tax</label>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:8px">
+        <input asp-for="TaxEnabled" type="checkbox" id="taxEnabled" />
+        <span class="muted">If enabled, PDF will show tax and Total = Subtotal + Tax.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input">
+      <label>Tax Label</label>
+      <input asp-for="TaxLabel" id="taxLabel" placeholder="GST / VAT / Sales Tax" />
+    </div>
+    <div class="input">
+      <label>Tax Rate (%)</label>
+      <input asp-for="TaxRate" id="taxRate" type="number" step="0.01" min="0" />
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const preset = document.getElementById('taxPreset');
+      const label = document.getElementById('taxLabel');
+      const rate = document.getElementById('taxRate');
+      const enabled = document.getElementById('taxEnabled');
+
+      function applyPreset() {
+        const v = preset.value;
+        if (v === 'kuwait_vat') { label.value = 'VAT'; rate.value = '0'; enabled.checked = false; }
+        if (v === 'india_gst') { label.value = 'GST'; rate.value = '18'; enabled.checked = true; }
+        if (v === 'us_sales') { label.value = 'Sales Tax'; rate.value = '0'; enabled.checked = false; }
+      }
+
+      preset.addEventListener('change', applyPreset);
+    })();
+  </script>
+
+  <div style="height:10px"></div>
+
+  <div class="card" style="padding:14px;border:1px solid #e5e7eb;">
+    <div style="font-weight:800;margin-bottom:8px;">Invoice Numbering</div>
+    <div class="row">
+      <div class="input">
+        <label>Invoice Prefix</label>
+        <input asp-for="InvoicePrefix" placeholder="INV" />
+        <div class="muted" style="margin-top:6px;">Example: INV → INV-0001, INV-0002 ...</div>
+      </div>
+      <div class="input">
+        <label>Next Invoice Number</label>
+        <input asp-for="NextInvoiceNumber" type="number" min="1" />
+        <div class="muted" style="margin-top:6px;">Set this if you are migrating from another tool.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input">
+      <label>Invoice PDF Template</label>
+      <select asp-for="InvoiceTemplateKey">
+        <option value="classic">Classic</option>
+        <option value="professional_blue">Professional Blue</option>
+      </select>
+      <div class="muted" style="margin-top:6px">Classic = simple. Professional Blue = like Zoho style with blue table header.</div>
+    </div>
+
+    <div class="input">
+      <label>Company Logo (optional)</label>
+      <input asp-for="LogoFile" type="file" accept="image/png,image/jpeg,image/webp" />
+      <div class="muted" style="margin-top:6px">
+        If you upload a logo, it will auto-fit in the PDF header. If no logo, nothing will be shown.
+      </div>
+
+      @if (Model.HasLogo)
+      {
+        <div style="margin-top:8px">
+          <img src="/api/company/logo" style="max-height:45px; border:1px solid #e5e7eb; padding:4px; border-radius:6px" />
+          <div class="muted" style="margin-top:6px">Current logo is saved. Upload a new logo to replace.</div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div style="height:16px"></div>
+
+  <div class="row">
+    <div class="input" style="grid-column:1 / span 2">
+      <label>Thank You Note (PDF)</label>
+      <textarea asp-for="ThankYouNote" rows="2" placeholder="Thanks for your business."></textarea>
+      <div class="muted">Shown near bottom of invoice PDF.</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input" style="grid-column:1 / span 2">
+      <label>Terms & Conditions (PDF)</label>
+      <textarea asp-for="TermsAndConditions" rows="4" placeholder="Full payment is due upon receipt of this invoice."></textarea>
+      <div class="muted">Printed at bottom of invoice PDF.</div>
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+  <div class="stack">
+    <button class="btn primary" type="submit">Save Company Settings</button>
+  </div>
+</form>
+</div>
+
+<div style="height:16px"></div>
+
+<div id="smtpTab" class="settings-panel">
+<form method="post" asp-page-handler="SaveSmtp" class="form">
+  <div class="card" style="padding:14px;border:1px solid #e5e7eb;">
+    <div style="font-weight:800;margin-bottom:8px;">Email Settings (SMTP)</div>
+    <div class="muted" style="margin-bottom:10px;">Configure SMTP to send invoice emails & due reminders. If SMTP is not set, the app will try SendGrid (optional).</div>
+
+    <div class="row">
+      <div class="input"><label>From Name</label><input asp-for="EmailFromName" placeholder="Your Company" /></div>
+      <div class="input"><label>From Email</label><input asp-for="EmailFromAddress" placeholder="billing@company.com" /></div>
+    </div>
+
+    <div class="row">
+      <div class="input"><label>SMTP Host</label><input asp-for="SmtpHost" placeholder="smtp.gmail.com" /></div>
+      <div class="input"><label>SMTP Port</label><input asp-for="SmtpPort" type="number" placeholder="587" /></div>
+    </div>
+
+    <div class="row">
+      <div class="input"><label>SMTP Username</label><input asp-for="SmtpUsername" placeholder="your-email" /></div>
+      <div class="input"><label>SMTP Password / App Password</label><input asp-for="SmtpPassword" type="password" placeholder="(leave blank to keep saved)" /></div>
+    </div>
+
+    <div class="row">
+      <div class="input">
+        <label>Use SSL/TLS</label>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:8px">
+          <input asp-for="SmtpUseSsl" type="checkbox" />
+          <span class="muted">Recommended: ON for Gmail/Office365.</span>
+        </div>
+      </div>
+      <div></div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="stack">
+      <button class="btn primary" type="submit">Save SMTP Settings</button>
+    </div>
+  </div>
+</form>
+</div>
+
+<div style="height:16px"></div>
+
+<div id="stripeTab" class="settings-panel">
+<form method="post" asp-page-handler="SaveStripe" class="form">
+  <div class="card settings-card" style="padding:14px;border:1px solid #e5e7eb;">
+    <div style="font-weight:800;margin-bottom:8px;">Stripe Payment Settings</div>
+    <div class="muted" style="margin-bottom:10px;">Paste your Stripe test or live keys here to enable the Pay Now button on public invoices.</div>
+
+    <div class="row">
+      <div class="input"><label>Stripe Publishable Key</label><input asp-for="StripePublishableKey" placeholder="pk_test_..." /></div>
+      <div class="input"><label>Stripe Secret Key</label><input asp-for="StripeSecretKey" type="password" placeholder="(leave blank to keep saved)" />
+        @if (Model.HasSavedStripeSecret)
+        {
+          <div class="muted" style="margin-top:6px;color:#166534;">Stripe secret key is already saved.</div>
+        }
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input"><label>Stripe Currency</label><input asp-for="StripeCurrency" placeholder="usd / kwd / eur" /></div>
+      <div class="input"><label>How to test</label><div class="muted" style="padding-top:10px;">Use test keys from Stripe Dashboard → Developers → API keys. Example test card: 4242 4242 4242 4242.</div></div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="stack">
+      <button class="btn primary" type="submit">Save Stripe Settings</button>
+    </div>
+  </div>
+</form>
+</div>
+
+<div style="height:10px"></div>
+<div class="muted">Tip: You can download an invoice PDF to preview the selected template.</div>
+
+<div style="height:16px"></div>
+
+<div id="autoTab" class="settings-panel">
+<div class="card" style="padding:14px;border:1px solid #e5e7eb;">
+  <div style="font-weight:800;margin-bottom:8px;">Automation Settings</div>
+
+  <form method="post" asp-page-handler="SaveAutomation" class="form">
+    <div class="row">
+      <div class="input">
+        <label>Reminder before due date (days)</label>
+        <input asp-for="ReminderDaysBeforeDue" type="number" min="1" />
+        <div class="muted" style="margin-top:6px;">Example: 2 = send reminder 2 days before due date.</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input">
+        <label>Check every</label>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;">
+          <input asp-for="AutomationIntervalValue" type="number" min="1" />
+          <select asp-for="AutomationIntervalUnit">
+            <option value="Minutes">Minutes</option>
+            <option value="Hours">Hours</option>
+          </select>
+        </div>
+        <div class="muted" style="margin-top:6px;">Worker checks invoices based on this interval.</div>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="stack">
+      <button class="btn primary" type="submit">Save Automation Settings</button>
+      <button class="btn" type="submit" formaction="?handler=RunAutomationNow">Run Automation Now</button>
+    </div>
+  </form>
+</div>
+
+</div>
+
+<div id="overdueTab" class="settings-panel">
+  <div class="card" style="padding:14px;border:1px solid #e5e7eb;">
+    <div style="font-weight:800;margin-bottom:8px;">Overdue Reminder Settings</div>
+    <div class="muted" style="margin-bottom:10px;">Send repeated overdue reminders until the invoice is paid. The interval is controlled here and stops automatically once status becomes Paid.</div>
+    <form method="post" asp-page-handler="SaveOverdueAutomation" class="form">
+      <div class="row">
+        <div class="input">
+          <label>Enable overdue reminders</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+            <input asp-for="OverdueReminderEnabled" type="checkbox" />
+            <span class="muted">If enabled, reminders repeat until invoice is marked paid.</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input">
+          <label>Repeat every</label>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;">
+            <input asp-for="OverdueReminderIntervalValue" type="number" min="1" />
+            <select asp-for="OverdueReminderIntervalUnit">
+              <option value="Minutes">Minutes</option>
+              <option value="Hours">Hours</option>
+              <option value="Days">Days</option>
+            </select>
+          </div>
+          <div class="muted" style="margin-top:6px;">Example: 1 hour, 30 minutes, 2 days.</div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="stack">
+        <button class="btn primary" type="submit">Save Overdue Reminder Settings</button>
+      </div>
+    </form>
+  </div>
+</div>

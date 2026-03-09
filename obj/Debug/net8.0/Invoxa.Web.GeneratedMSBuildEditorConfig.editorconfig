@@ -1,0 +1,143 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = Invoxa.Web
+build_property.RootNamespace = Invoxa.Web
+build_property.ProjectDir = C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Account/ForgotPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxGb3Jnb3RQYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Account/Logout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxMb2dvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Account/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Account/ResetPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZXNldFBhc3N3b3JkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Clients/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50c1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Clients/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Invoices/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52b2ljZXNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Invoices/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52b2ljZXNcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Invoices/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52b2ljZXNcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Invoices/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW52b2ljZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Logs/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Owner/Companies.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3duZXJcQ29tcGFuaWVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Owner/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3duZXJcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Owner/Invoices.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3duZXJcSW52b2ljZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Owner/Users.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3duZXJcVXNlcnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Payments/Cancel.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGF5bWVudHNcQ2FuY2VsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Payments/Success.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGF5bWVudHNcU3VjY2Vzcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Public/Client.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHVibGljXENsaWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Public/Invoice.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHVibGljXEludm9pY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Settings/Company.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2V0dGluZ3NcQ29tcGFueS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Settings/EmailTemplates.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2V0dGluZ3NcRW1haWxUZW1wbGF0ZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Settings/User.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2V0dGluZ3NcVXNlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Shared/_AuthLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9BdXRoTGF5b3V0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Lenovo/Downloads/Invoxa-final-tabs-overdue-stripe/Pages/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,27 @@
+@page
+@model Invoxa.Web.Pages.Logs.IndexModel
+@{ ViewData["Title"] = "Logs"; }
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-weight:800;">Activity Logs</div>
+    <div class="stack">
+      <a class="btn" asp-page="/Logs/Index" asp-page-handler="Export" title="Export to Excel">
+        <i class="bi bi-file-earmark-excel"></i> Export Excel
+      </a>
+      <a class="btn" asp-page="/Index">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <div style="height:10px"></div>
+
+  <table class="table">
+    <thead><tr><th>Time</th><th>User</th><th>Channel</th><th>Action</th><th>Target</th><th>Notes</th></tr></thead>
+    <tbody>
+    @foreach (var l in Model.Logs)
+    {
+      <tr><td>@l.When</td><td>@l.Actor</td><td>@l.Channel</td><td>@l.Type</td><td>@l.Target</td><td>@l.Notes</td></tr>
+    }
+    </tbody>
+  </table>
+</div>

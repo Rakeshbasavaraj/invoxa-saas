@@ -1,0 +1,66 @@
+@page "/c/{token}"
+@model Invoxa.Web.Pages.Public.ClientModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Client Portal";
+}
+
+<div class="container" style="max-width:980px; padding:24px 16px;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h2 class="mb-0">@Model.CompanyName</h2>
+            <div class="text-muted">Client portal for <strong>@Model.Client?.Name</strong></div>
+        </div>
+        <div class="text-muted small">Secure link • Keep it private</div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <strong>Your invoices</strong>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Issue</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if (Model.Invoices.Count == 0)
+                {
+                    <tr><td colspan="6" class="text-muted">No invoices yet.</td></tr>
+                }
+                else
+                {
+                    foreach (var inv in Model.Invoices)
+                    {
+                        <tr>
+                            <td><a href="/i/@inv.PublicToken" target="_blank">@inv.InvoiceNumber</a></td>
+                            <td>@inv.IssueDate.ToString("yyyy-MM-dd")</td>
+                            <td>@inv.DueDate.ToString("yyyy-MM-dd")</td>
+                            <td><span class="badge bg-secondary">@inv.Status</span></td>
+                            <td class="text-end">@inv.Total.ToString("0.00")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="/i/@inv.PublicToken" target="_blank">View</a>
+                                @if (inv.Status == Invoxa.Web.Domain.InvoiceStatus.Paid)
+                                {
+                                    <span class="btn btn-sm btn-success disabled">Paid</span>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(inv.PaymentLink))
+                                {
+                                    <a class="btn btn-sm btn-success" href="@inv.PaymentLink" target="_blank">Pay</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

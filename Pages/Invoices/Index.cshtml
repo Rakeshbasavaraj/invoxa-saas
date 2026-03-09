@@ -1,0 +1,100 @@
+@page
+@model Invoxa.Web.Pages.Invoices.IndexModel
+@{ ViewData["Title"] = "Invoices"; }
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div class="stack">
+    <a class="btn primary" asp-page="/Invoices/Create"><i class="bi bi-plus-circle"></i> Create Invoice</a>
+  </div>
+  <div class="stack">
+    <form method="post" asp-page-handler="RunAutomation">
+      <button class="btn primary" type="submit" title="Run reminders and recurring invoice checks now">
+        <i class="bi bi-lightning-charge"></i> Run Automation Now
+      </button>
+    </form>
+    <form method="post" asp-page-handler="SendDueReminders">
+      <button class="btn email-btn" type="submit" title="Send email reminders for overdue + due in next 2 days">
+        <i class="bi bi-envelope-exclamation"></i> Send Due Reminders
+      </button>
+    </form>
+    <form method="post" asp-page-handler="SendDueWhatsAppReminders">
+      <button class="btn whatsapp-btn" type="submit" title="Send WhatsApp reminders for overdue + due in next 2 days">
+        <i class="bi bi-whatsapp"></i> Send WhatsApp Due
+      </button>
+    </form>
+    <a class="btn" asp-page="/Invoices/Index" asp-page-handler="Export" title="Export invoices to Excel">
+      <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+  </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+  <div style="height:10px"></div>
+  <div class="notice">@Model.Message</div>
+}
+
+<div style="height:10px"></div>
+
+<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+  <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <input name="q" value="@Model.Q" placeholder="Search invoice #, client, email" style="min-width:260px;" />
+    <select name="status">
+      <option value="">All Status</option>
+      <option value="Draft" selected="@(string.Equals(Model.Status, "Draft", StringComparison.OrdinalIgnoreCase))">Draft</option>
+      <option value="Unpaid" selected="@(string.Equals(Model.Status, "Unpaid", StringComparison.OrdinalIgnoreCase))">Unpaid</option>
+      <option value="Overdue" selected="@(string.Equals(Model.Status, "Overdue", StringComparison.OrdinalIgnoreCase))">Overdue</option>
+      <option value="Paid" selected="@(string.Equals(Model.Status, "Paid", StringComparison.OrdinalIgnoreCase))">Paid</option>
+    </select>
+    <button class="btn" type="submit"><i class="bi bi-search"></i> Search</button>
+    <a class="btn" asp-page="/Invoices/Index"><i class="bi bi-x-circle"></i> Clear</a>
+  </form>
+  <div style="color:#6b7280;font-size:13px;">@Model.Invoices.Count invoice(s)</div>
+</div>
+
+<table class="table">
+  <thead><tr><th>Invoice</th><th>Client</th><th>Due</th><th>Status</th><th>Total</th><th style="width:320px">Actions</th></tr></thead>
+  <tbody>
+  @foreach (var inv in Model.Invoices)
+  {
+    // Invoice.Status is an enum (InvoiceStatus). Use enum comparisons (not string.Equals).
+    var cls = inv.Status == Invoxa.Web.Domain.InvoiceStatus.Paid ? "badge-paid"
+            : inv.Status == Invoxa.Web.Domain.InvoiceStatus.Overdue ? "badge-overdue"
+            : inv.Status == Invoxa.Web.Domain.InvoiceStatus.Draft ? "badge-draft"
+            : "badge-unpaid";
+    <tr>
+      <td><a asp-page="/Invoices/Details" asp-route-id="@inv.Id">@inv.InvoiceNumber</a></td>
+      <td>@inv.Client!.Name</td>
+      <td>@inv.DueDate.ToString("yyyy-MM-dd")</td>
+      <td><span class="badge @cls">@inv.Status</span></td>
+      <td>@inv.Total.ToString("0.00")</td>
+      <td class="stack actions">
+        <a class="btn icon-btn" asp-page="/Invoices/Edit" asp-route-id="@inv.Id" title="Edit"><i class="bi bi-pencil-square"></i></a>
+        <a class="btn icon-btn" href="/i/@inv.PublicToken" target="_blank" title="Public link"><i class="bi bi-link-45deg"></i></a>
+        <form method="post" asp-page-handler="Copy" asp-route-id="@inv.Id">
+          <button class="btn icon-btn" type="submit" title="Copy invoice"><i class="bi bi-files"></i></button>
+        </form>
+        <form method="post" asp-page-handler="Download" asp-route-id="@inv.Id">
+          <button class="btn icon-btn download-btn" type="submit" title="Download PDF"><i class="bi bi-download"></i></button>
+        </form>
+        <form method="post" asp-page-handler="SendEmail" asp-route-id="@inv.Id">
+          <button class="btn icon-btn email-btn" type="submit" title="Send Email"><i class="bi bi-envelope"></i></button>
+        </form>
+        <form method="post" asp-page-handler="SendWhatsApp" asp-route-id="@inv.Id">
+          <button class="btn icon-btn whatsapp-btn" type="submit" title="Send WhatsApp"><i class="bi bi-whatsapp"></i></button>
+        </form>
+        <a class="btn icon-btn" asp-page="/Invoices/Details" asp-route-id="@inv.Id" title="Open"><i class="bi bi-box-arrow-up-right"></i></a>
+        <form method="post" asp-page-handler="MarkPaid" asp-route-id="@inv.Id">
+          <button class="btn icon-btn primary paid-btn" type="submit" title="Mark Paid"><i class="bi bi-check2-circle"></i></button>
+        </form>
+        <form method="post" asp-page-handler="MarkUnpaid" asp-route-id="@inv.Id">
+          <button class="btn icon-btn reset-btn" type="submit" title="Mark Unpaid"><i class="bi bi-arrow-counterclockwise"></i></button>
+        </form>
+        <form method="post" asp-page-handler="Delete" asp-route-id="@inv.Id" onsubmit="return confirm('Delete invoice @inv.InvoiceNumber?');">
+          <button class="btn icon-btn danger" type="submit" title="Delete Invoice"><i class="bi bi-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+  }
+  </tbody>
+</table>

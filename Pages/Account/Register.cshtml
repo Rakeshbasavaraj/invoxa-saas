@@ -1,0 +1,84 @@
+@page
+@model Invoxa.Web.Pages.Account.RegisterModel
+@{
+    Layout = "/Pages/Shared/_AuthLayout.cshtml";
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-card">
+    <div class="auth-header">
+        <div class="brand-badge"><i class="bi bi-check2-square"></i></div>
+        <div class="brand-name">Invoxa</div>
+    </div>
+
+    <div class="auth-body">
+        <h1 class="auth-title">Create Your Account</h1>
+        <p class="auth-subtitle">Set up your company workspace and start invoicing.</p>
+
+        @if (!ViewContext.ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="ModelOnly" class="validation-box"></div>
+        }
+
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Input.FullName"></label>
+                <input asp-for="Input.FullName" type="text" placeholder="Full name" />
+                <span asp-validation-for="Input.FullName" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" type="email" placeholder="Email address" />
+                <span asp-validation-for="Input.Email" class="field-error"></span>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="Input.Password"></label>
+                    <input asp-for="Input.Password" type="password" placeholder="Password" />
+                    <span asp-validation-for="Input.Password" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.ConfirmPassword"></label>
+                    <input asp-for="Input.ConfirmPassword" type="password" placeholder="Confirm password" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.CompanyName"></label>
+                <input asp-for="Input.CompanyName" type="text" placeholder="Company name" />
+                <span asp-validation-for="Input.CompanyName" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.PlanKey"></label>
+                <select asp-for="Input.PlanKey">
+                    <option value="Free">Free - 10 invoices / 5 clients</option>
+                    <option value="Starter">Starter - 100 invoices / 50 clients</option>
+                    <option value="Pro">Pro - Unlimited invoices / clients</option>
+                </select>
+                <span asp-validation-for="Input.PlanKey" class="field-error"></span>
+            </div>
+
+            <div class="terms-row">
+                <label class="check-inline">
+                    <input asp-for="Input.AcceptTerms" />
+                    <span>I agree to the Terms &amp; Conditions</span>
+                </label>
+                <span asp-validation-for="Input.AcceptTerms" class="field-error"></span>
+            </div>
+
+            <button type="submit" class="btn-main signup">Sign Up</button>
+        </form>
+
+        <div class="footer-link">
+            Already have an account? <a asp-page="/Account/Login">Login</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
