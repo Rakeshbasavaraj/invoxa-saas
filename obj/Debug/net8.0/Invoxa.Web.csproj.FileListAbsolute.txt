@@ -156,6 +156,7 @@ C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\Invo
 C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\Invoxa.Web.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\Invoxa.Web.RazorAssemblyInfo.cache
 C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\Invoxa.Web.RazorAssemblyInfo.cs
+C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\Invoxa.Web.sourcelink.json
 C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\Lenovo\Downloads\Invoxa-final-tabs-overdue-stripe\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
