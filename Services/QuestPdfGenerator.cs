@@ -9,8 +9,7 @@ public class QuestPdfGenerator : IPdfGenerator
 {
     public byte[] GenerateInvoicePdf(Invoice invoice, Company company)
     {
-        QuestPDF.Settings.License = LicenseType.Community;
-        var key = (company.InvoiceTemplateKey ?? "default_modern").Trim().ToLowerInvariant();
+                var key = (company.InvoiceTemplateKey ?? "default_modern").Trim().ToLowerInvariant();
         return key switch
         {
             "clean_minimal" => GenerateTemplate(invoice, company, false, false, false),
@@ -82,7 +81,7 @@ public class QuestPdfGenerator : IPdfGenerator
             {
                 page.Size(PageSizes.A4);
                 page.Margin(18);
-                page.DefaultTextStyle(x => x.FontSize(9));
+                page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(9));
 
                 page.Content().Border(1).BorderColor(Colors.Black).Column(col =>
                 {
@@ -310,7 +309,7 @@ public class QuestPdfGenerator : IPdfGenerator
             {
                 page.Margin(28);
                 page.Size(PageSizes.A4);
-                page.DefaultTextStyle(x => x.FontSize(fontSize));
+                page.DefaultTextStyle(x => x.FontFamily("DejaVu Sans").FontSize(fontSize));
 
                 var logoWidth = company.LogoWidth is > 0 ? Math.Clamp(company.LogoWidth.Value, 60, 320) : 160;
                 var logoHeight = company.LogoHeight is > 0 ? Math.Clamp(company.LogoHeight.Value, 20, 180) : (int?)null;

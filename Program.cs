@@ -1,8 +1,13 @@
+using QuestPDF.Infrastructure;
 using Invoxa.Web.Data;
 using Invoxa.Web.Services;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
+
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
