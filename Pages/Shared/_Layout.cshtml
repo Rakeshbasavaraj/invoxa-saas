@@ -13,6 +13,23 @@
   <title>Invoxa</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="~/css/site.css" />
+  <script>
+    (function(){
+      var allowed = ['classic','dark','emerald','purple','orange'];
+      function readCookie(name){
+        var cookie = document.cookie.split('; ').find(function(row){ return row.indexOf(name + '=') === 0; });
+        return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
+      }
+      try{
+        var theme = readCookie('invoxa_theme') || localStorage.getItem('invoxa-theme') || 'classic';
+        if (allowed.indexOf(theme) === -1) theme = 'classic';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('invoxa-theme', theme);
+      }catch(e){
+        document.documentElement.setAttribute('data-theme','classic');
+      }
+    })();
+  </script>
 </head>
 <body class="@(isAuthPage ? "auth-body" : "")">
 @if (isAuthPage || isAnonymousHome)
@@ -34,6 +51,8 @@ else
         <a asp-page="/Settings/User">User Settings</a>
         <a asp-page="/Settings/Company">Company Settings</a>
         <a asp-page="/Settings/EmailTemplates">Email Templates</a>
+        <a asp-page="/Settings/PdfTemplates">PDF Templates</a>
+        <a asp-page="/Settings/AllowyFarmer">Allowyfarmer</a>
         @if (string.Equals(currentRole, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
         {
           <a asp-page="/Owner/Index">Super Admin</a>

@@ -16,5 +16,6 @@
       <PackageReference Include="ClosedXML" Version="0.104.2" />
       <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
     <PackageReference Include="Stripe.net" Version="46.2.0" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 </Project>

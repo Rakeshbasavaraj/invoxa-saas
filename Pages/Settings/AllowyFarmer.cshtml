@@ -1,0 +1,75 @@
+@page
+@model Invoxa.Web.Pages.Settings.AllowyFarmerModel
+@{
+    ViewData["Title"] = "Allowyfarmer";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="notice" style="margin-bottom:12px;">@Model.Message</div>
+}
+
+<div class="card form">
+    <div style="font-size:24px;font-weight:800;">Allowyfarmer Template Settings</div>
+    <div class="muted" style="margin-top:6px;">Save these details once. The Allowyfarmer PDF will use the same exact format and load these fields automatically.</div>
+    <div class="small-note" style="margin-top:6px;">Use this page for the fixed industrial invoice layout only.</div>
+
+    <form method="post" style="margin-top:16px;">
+        <div style="font-weight:800;margin-bottom:8px;">Company Details</div>
+        <div class="row">
+            <div class="input">
+                <label>Company Name</label>
+                <input asp-for="CompanyName" />
+            </div>
+            <div class="input">
+                <label>GST Number</label>
+                <input asp-for="GstNumber" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="input"><label>Address Line 1</label><input asp-for="AddressLine1" /></div>
+            <div class="input"><label>Address Line 2</label><input asp-for="AddressLine2" /></div>
+        </div>
+        <div class="row">
+            <div class="input"><label>City / State / PIN</label><input asp-for="CityLine" /></div>
+            <div class="input"><label>Website</label><input asp-for="Website" /></div>
+        </div>
+        <div class="row">
+            <div class="input"><label>Phone</label><input asp-for="Phone" /></div>
+            <div class="input"><label>Default HSN Code</label><input asp-for="DefaultHsnCode" /></div>
+        </div>
+
+        <div style="font-weight:800;margin:18px 0 8px;">Invoice Defaults</div>
+        <div class="row">
+            <div class="input"><label>Invoice Prefix Text</label><input asp-for="InvoicePrefixText" placeholder="Invoice No." /></div>
+            <div class="input"><label>Default Delivery Note</label><input asp-for="DefaultDeliveryNote" /></div>
+        </div>
+        <div class="row">
+            <div class="input" style="grid-column:1 / -1;"><label>Default Mode / Terms of Payment</label><textarea asp-for="DefaultModeTerms" rows="3"></textarea></div>
+        </div>
+
+        <div style="font-weight:800;margin:18px 0 8px;">Bank Details</div>
+        <div class="row">
+            <div class="input"><label>Beneficiary Name</label><input asp-for="BankBeneficiary" /></div>
+            <div class="input"><label>Account Number</label><input asp-for="BankAccountNumber" /></div>
+        </div>
+        <div class="row">
+            <div class="input"><label>Account Type</label><input asp-for="BankAccountType" /></div>
+            <div class="input"><label>Bank Name</label><input asp-for="BankName" /></div>
+        </div>
+        <div class="row">
+            <div class="input"><label>Branch</label><input asp-for="BankBranch" /></div>
+            <div class="input"><label>IFSC Code</label><input asp-for="BankIfscCode" /></div>
+        </div>
+
+        <div style="font-weight:800;margin:18px 0 8px;">Footer Note</div>
+        <div class="row">
+            <div class="input" style="grid-column:1 / -1;"><label>Bottom Note</label><textarea asp-for="FooterNote" rows="4"></textarea></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:16px;">
+            <button class="btn primary" type="submit">Save Allowyfarmer Settings</button>
+            <a class="btn" asp-page="/Settings/PdfTemplates">Open PDF Templates</a>
+        </div>
+    </form>
+</div>

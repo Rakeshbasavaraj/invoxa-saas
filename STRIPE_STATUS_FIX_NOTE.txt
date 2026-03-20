@@ -1,0 +1,1 @@
+Fixed Stripe paid-status update by making payment success recovery use invoiceId and Stripe session metadata, so invoice status changes to Paid more reliably after checkout redirect.

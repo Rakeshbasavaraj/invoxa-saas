@@ -1,0 +1,10 @@
+Automation fix applied:
+- background automation now sends emails using the correct company/workspace SMTP settings
+- previously, automation jobs could fall back to the first company in the database when no logged-in HttpContext existed
+- manual invoice emails still work as before
+
+Files changed:
+- Services/IEmailSender.cs
+- Services/SmtpEmailSender.cs
+- Services/SendGridEmailSender.cs
+- Services/InvoiceAutomationWorker.cs

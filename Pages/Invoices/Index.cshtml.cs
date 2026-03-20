@@ -34,13 +34,15 @@ public class IndexModel : PageModel
 
     public string? Q { get; set; }
     public string? Status { get; set; }
+    public string? Country { get; set; }
 
-    public async Task OnGet(string? q = null, string? status = null)
+    public async Task OnGet(string? q = null, string? status = null, string? country = null)
     {
         var companyId = await CurrentUserContext.RequireCompanyIdAsync(HttpContext, _db);
 
         Q = q;
         Status = status;
+        Country = country;
 
         var query = _db.Invoices.Include(i => i.Client).Include(i => i.Items)
             .Where(i => i.CompanyId == companyId);
@@ -58,6 +60,12 @@ public class IndexModel : PageModel
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<InvoiceStatus>(status, true, out var st))
         {
             query = query.Where(i => i.Status == st);
+        }
+
+        if (!string.IsNullOrWhiteSpace(country))
+        {
+            var countryTerm = country.Trim().ToLower();
+            query = query.Where(i => i.Client != null && i.Client.Country != null && i.Client.Country.ToLower().Contains(countryTerm));
         }
 
         Invoices = await query.OrderByDescending(i => i.CreatedAtUtc).ToListAsync();
@@ -165,25 +173,32 @@ public class IndexModel : PageModel
         var company = await _db.Companies.FirstAsync(c => c.Id == companyId);
         var bytes = _pdf.GenerateInvoicePdf(inv, company);
 
-        await _email.SendAsync(to,
-            $"Invoice {inv.InvoiceNumber} from {company.Name}",
-            $"Hello {inv.Client!.Name},\n\nPlease find your invoice attached.\n\nThanks,\n{company.Name}",
-            bytes,
-            $"{inv.InvoiceNumber}.pdf");
-
-        _db.ReminderLogs.Add(new ReminderLog
+        try
         {
-            CompanyId = companyId,
-            InvoiceId = inv.Id,
-            Actor = _user.Name,
-            Channel = "Email",
-            Type = "InvoiceEmailSent",
-            To = to,
-            Notes = $"Sent invoice {inv.InvoiceNumber}"
-        });
-        await _db.SaveChangesAsync();
+            await _email.SendAsync(to,
+                $"Invoice {inv.InvoiceNumber} from {company.Name}",
+                $"Hello {inv.Client!.Name},\n\nPlease find your invoice attached.\n\nThanks,\n{company.Name}",
+                bytes,
+                $"{inv.InvoiceNumber}.pdf");
 
-        Message = "Email sent.";
+            _db.ReminderLogs.Add(new ReminderLog
+            {
+                CompanyId = companyId,
+                InvoiceId = inv.Id,
+                Actor = _user.Name,
+                Channel = "Email",
+                Type = "InvoiceEmailSent",
+                To = to,
+                Notes = $"Sent invoice {inv.InvoiceNumber}"
+            });
+            await _db.SaveChangesAsync();
+
+            Message = "Email sent.";
+        }
+        catch (Exception ex)
+        {
+            Message = "Email not sent. Check Company Settings SMTP or SendGrid configuration. Error: " + ex.Message;
+        }
         await OnGet();
         return Page();
     }
@@ -314,7 +329,7 @@ public async Task<IActionResult> OnPostSendDueReminders()
             .OrderBy(i => i.DueDate)
             .ToListAsync();
 
-        int sent = 0, skipped = 0;
+        int sent = 0, skipped = 0, failed = 0;
         foreach (var inv in targets)
         {
             var to = inv.Client?.Email;
@@ -337,24 +352,31 @@ public async Task<IActionResult> OnPostSendDueReminders()
             var payUrl = string.IsNullOrWhiteSpace(inv.PaymentLink) ? publicUrl : inv.PaymentLink;
             var body = $"Hello {inv.Client!.Name},\n\nJust a friendly reminder that invoice {inv.InvoiceNumber} is due on {dueTxt}.\nTotal: {inv.Total:0.00}.\n\nPay now: {payUrl}\nView invoice: {publicUrl}\n\nPlease find the invoice attached.\n\nThanks,\n{company.Name}";
 
-            await _email.SendAsync(to, subject, body, bytes, $"{inv.InvoiceNumber}.pdf");
-
-            _db.ReminderLogs.Add(new ReminderLog
+            try
             {
-                CompanyId = companyId,
-                InvoiceId = inv.Id,
-                Actor = _user.Name,
-                Channel = "Email",
-                Type = "DueReminderEmail",
-                To = to,
-                Notes = $"Due reminder for {inv.InvoiceNumber} (Due {dueTxt})"
-            });
-            sent++;
+                await _email.SendAsync(to, subject, body, bytes, $"{inv.InvoiceNumber}.pdf");
+
+                _db.ReminderLogs.Add(new ReminderLog
+                {
+                    CompanyId = companyId,
+                    InvoiceId = inv.Id,
+                    Actor = _user.Name,
+                    Channel = "Email",
+                    Type = "DueReminderEmail",
+                    To = to,
+                    Notes = $"Due reminder for {inv.InvoiceNumber} (Due {dueTxt})"
+                });
+                sent++;
+            }
+            catch
+            {
+                failed++;
+            }
         }
 
         await _db.SaveChangesAsync();
 
-        Message = $"Due reminders complete. Sent: {sent}. Skipped (no email): {skipped}.";
+        Message = $"Due reminders complete. Sent: {sent}. Skipped (no email): {skipped}. Failed (email/config): {failed}.";
         await OnGet();
         return Page();
     }

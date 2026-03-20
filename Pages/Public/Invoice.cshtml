@@ -59,7 +59,7 @@ else
             <div style="font-size:24px;font-weight:900;">Client Payment Portal</div>
             <div style="color:#6b7280;margin-top:6px;">Review your invoice, download the PDF, or complete payment securely.</div>
             <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
-                @if (Model.Invoice.Total <= 0)
+                @if (InvoiceMoney.GetGrandTotal(Model.Invoice, Model.Company) <= 0)
                 {
                     <span class="muted">No payment required for this invoice.</span>
                 }
@@ -82,7 +82,7 @@ else
         </div>
         <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px;">
             <div style="font-size:13px;color:#6b7280;">Amount Due</div>
-            <div style="font-size:28px;font-weight:900;margin-top:6px;">@Model.Invoice.Total.ToString("0.00")</div>
+            <div style="font-size:28px;font-weight:900;margin-top:6px;">@InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Model.Invoice, Model.Company), Model.Company)</div>
             <div style="margin-top:10px;color:#6b7280;">Due Date: @Model.Invoice.DueDate</div>
             <div style="margin-top:10px;">Status: <span class="badge">@Model.Invoice.Status</span></div>
             @if (!string.IsNullOrWhiteSpace(Model.Invoice.Client?.Email) || !string.IsNullOrWhiteSpace(Model.Invoice.Client?.Phone))
@@ -123,15 +123,22 @@ else
                 <tr>
                     <td>@it.Description</td>
                     <td style="text-align:right;">@it.Quantity</td>
-                    <td style="text-align:right;">@it.UnitPrice.ToString("0.00")</td>
-                    <td style="text-align:right;">@it.LineTotal.ToString("0.00")</td>
+                    <td style="text-align:right;">@InvoiceMoney.FormatAmount(it.UnitPrice, Model.Company)</td>
+                    <td style="text-align:right;">@InvoiceMoney.FormatAmount(it.LineTotal, Model.Company)</td>
                 </tr>
             }
             </tbody>
         </table>
 
-        <div style="display:flex;justify-content:flex-end;margin-top:10px;font-weight:900;">
-            Total: @Model.Invoice.Total.ToString("0.00")
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+            <div style="min-width:280px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>Subtotal</span><strong>@InvoiceMoney.FormatAmount(Model.Invoice.Subtotal, Model.Company)</strong></div>
+                @if (Model.Company?.TaxEnabled == true && Model.Company.TaxRate > 0)
+                {
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>@(string.IsNullOrWhiteSpace(Model.Company.TaxLabel) ? "Tax" : Model.Company.TaxLabel) (@Model.Company.TaxRate%)</span><strong>@InvoiceMoney.FormatAmount(InvoiceMoney.GetTaxAmount(Model.Invoice, Model.Company), Model.Company)</strong></div>
+                }
+                <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid #e5e7eb;font-weight:900;"><span>Total</span><span>@InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Model.Invoice, Model.Company), Model.Company)</span></div>
+            </div>
         </div>
     </div>
 }

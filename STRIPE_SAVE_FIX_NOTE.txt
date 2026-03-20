@@ -1,0 +1,1 @@
+This update makes Stripe save more robust. It now saves the current company keys, avoids crashing the settings page, and shows a friendly message if automatic payment-link generation fails for some invoices.

@@ -1,0 +1,15 @@
+Email sending fix included:
+- email sender now loads SMTP settings for the current logged-in company instead of always using the first company
+- Send Invoice email now shows an on-page message instead of crashing to /Error
+- Send Due Reminders now continues invoice-by-invoice and reports sent/skipped/failed counts
+- Mark Paid confirmation email failure no longer breaks the page
+
+If email still does not send, check Company Settings:
+1. Email From Address
+2. SMTP Host
+3. SMTP Port
+4. SMTP Username
+5. SMTP Password / App Password
+6. SSL checkbox
+
+If SMTP is blank, app falls back to SendGrid from appsettings.json.

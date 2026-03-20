@@ -74,6 +74,30 @@ using (var scope = app.Services.CreateScope())
         _ = db.Companies.Select(c => c.OverdueReminderEnabled).FirstOrDefault();
         _ = db.Companies.Select(c => c.OverdueReminderIntervalValue).FirstOrDefault();
         _ = db.Companies.Select(c => c.OverdueReminderIntervalUnit).FirstOrDefault();
+        _ = db.Companies.Select(c => c.DefaultCurrency).FirstOrDefault();
+        _ = db.Companies.Select(c => c.PrimaryColor).FirstOrDefault();
+        _ = db.Companies.Select(c => c.TableHeaderColor).FirstOrDefault();
+        _ = db.Companies.Select(c => c.PdfFontSize).FirstOrDefault();
+        _ = db.Companies.Select(c => c.PdfTitleStyle).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowHsnSac).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowSgst).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowCgst).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowIgst).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowCess).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowTerms).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowNotes).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowPaymentDetails).FirstOrDefault();
+        _ = db.Companies.Select(c => c.PaymentDetails).FirstOrDefault();
+        _ = db.Companies.Select(c => c.CustomColumn1Name).FirstOrDefault();
+        _ = db.Companies.Select(c => c.CustomColumn2Name).FirstOrDefault();
+        _ = db.Companies.Select(c => c.CustomColumn3Name).FirstOrDefault();
+        _ = db.Companies.Select(c => c.CustomColumn4Name).FirstOrDefault();
+        _ = db.Companies.Select(c => c.ShowSignature).FirstOrDefault();
+        _ = db.Companies.Select(c => c.SignatureLabel).FirstOrDefault();
+        _ = db.Companies.Select(c => c.SignatureName).FirstOrDefault();
+        _ = db.Companies.Select(c => c.AllowyFarmerCompanyName).FirstOrDefault();
+        _ = db.Companies.Select(c => c.AllowyFarmerBankIfscCode).FirstOrDefault();
+        _ = db.Companies.Select(c => c.AllowyFarmerFooterNote).FirstOrDefault();
     }
     catch
     {

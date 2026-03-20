@@ -150,7 +150,7 @@ else
 
   <div style="height:10px"></div>
 
-  <div class="dash-charts">
+  <div class="dash-charts dashboard-overview-grid">
     <div class="card chart-card">
       <div class="chart-head">
         <div class="chart-title">Revenue (Last @Model.Days days)</div>
@@ -196,17 +196,114 @@ else
       </div>
       <canvas id="statusChart" class="chart-canvas" height="260" style="width:100%;height:260px;"></canvas>
     </div>
+
+    <div class="card chart-card geo-chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Revenue by Geography</div>
+        <select id="geoScope" class="input geo-scope-select">
+          <option value="world">Global</option>
+          <option value="india">India</option>
+        </select>
+      </div>
+      <div class="geo-layout">
+        <div>
+          <div id="geoChart" class="geo-chart-host"></div>
+          <div class="geo-legend">
+            <span><i class="geo-dot low"></i>Low</span>
+            <span><i class="geo-dot mid"></i>Medium</span>
+            <span><i class="geo-dot high"></i>High</span>
+          </div>
+        </div>
+        <div class="geo-side-panel">
+          <div class="geo-spotlight-card" id="geoSpotlightCard">
+            <div class="geo-spotlight-kicker">Top paid country</div>
+            <div class="geo-spotlight-country" id="geoSpotlightCountry">--</div>
+            <div class="geo-spotlight-meta"><span id="geoSpotlightRevenue">0.00</span><span id="geoSpotlightInvoices">0 invoices</span></div>
+            <div class="geo-spotlight-progress"><span id="geoSpotlightBar"></span></div>
+          </div>
+          <div class="geo-panel-title">Top Countries</div>
+          @if (Model.GeographyRevenue.Any())
+          {
+            for (var i = 0; i < Model.GeographyRevenue.Count; i++)
+            {
+              var item = Model.GeographyRevenue[i];
+              <div class="geo-country-row @(i < 3 ? $"rank-{i + 1}" : string.Empty)" data-geo-country="@item.Country" data-geo-revenue="@item.Revenue.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" data-geo-invoices="@item.InvoiceCount">
+                <div>
+                  <div class="geo-country-name">@item.Country</div>
+                  <div class="geo-country-meta">@item.InvoiceCount invoices</div>
+                </div>
+                <div class="geo-country-amount">@item.Revenue.ToString("0.00")</div>
+              </div>
+            }
+          }
+          else
+          {
+            <div class="geo-empty">No paid invoices with country data yet.</div>
+          }
+
+          <div class="geo-panel-sep"></div>
+          <div class="geo-panel-title">India - Top 5 cities</div>
+          @if (Model.IndiaStateRevenue.Any())
+          {
+            foreach (var item in Model.IndiaStateRevenue)
+            {
+              <div class="geo-country-row compact">
+                <div class="geo-country-name">@item.Region</div>
+                <div class="geo-country-amount">@item.Revenue.ToString("0.00")</div>
+              </div>
+            }
+          }
+          else
+          {
+            <div class="geo-empty">No India paid invoice data yet.</div>
+          }
+        </div>
+      </div>
+    </div>
   </div>
 
   <div style="height:12px"></div>
 
-  <div class="dash-charts dash-charts-3">
+  <div class="dash-charts dashboard-lower-grid">
     <div class="card chart-card">
       <div class="chart-head">
         <div class="chart-title">Top Clients (Paid)</div>
         <a class="btn" asp-page="/Clients/Index" title="View clients"><i class="bi bi-people"></i> View</a>
       </div>
       <canvas id="topClientsChart" class="chart-canvas" height="260" style="width:100%;height:260px;"></canvas>
+    </div>
+
+    <div class="card chart-card activity-card">
+      <div class="chart-head">
+        <div class="chart-title">Recent Activity</div>
+        <a class="btn" asp-page="/Logs/Index" title="Open activity log"><i class="bi bi-clock-history"></i> View</a>
+      </div>
+      <div class="activity-list">
+        @if (Model.RecentActivities.Any())
+        {
+          foreach (var act in Model.RecentActivities)
+          {
+            var iconCls = act.Channel?.Equals("Email", StringComparison.OrdinalIgnoreCase) == true ? "bi-envelope activity-icon email"
+                        : act.Channel?.Equals("WhatsApp", StringComparison.OrdinalIgnoreCase) == true ? "bi-whatsapp activity-icon whatsapp"
+                        : act.Type?.Contains("Paid", StringComparison.OrdinalIgnoreCase) == true ? "bi-check2-circle activity-icon success"
+                        : "bi-activity activity-icon system";
+            <div class="activity-row">
+              <div class="activity-main">
+                <i class="bi @iconCls"></i>
+                <div>
+                  <div class="activity-title">@act.Type</div>
+                  <div class="activity-sub">@(string.IsNullOrWhiteSpace(act.Notes) ? act.Target : act.Notes)</div>
+                </div>
+              </div>
+              <div class="activity-time">@act.SentAtUtc.ToLocalTime().ToString("dd MMM HH:mm")</div>
+            </div>
+          }
+        }
+        else
+        {
+          <div class="geo-empty">No recent activity yet.</div>
+        }
+      </div>
     </div>
   </div>
 </div>
@@ -252,6 +349,8 @@ else
   const statusCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusCounts));
   const topClientLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopClientLabels));
   const topClientValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopClientValues));
+  const geographyRows = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.GeographyRevenue));
+  const indiaRows = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.IndiaStateRevenue));
 
   function drawDashboardCharts(){
     if (!window.InvoxaCharts) return;
@@ -266,8 +365,178 @@ else
     window.InvoxaCharts.drawBarChart('topClientsChart', topClientLabels, topClientValues, 'Paid');
   }
 
-  window.addEventListener('load', () => {
+  function renderGeoFallback(message){
+    const host = document.getElementById('geoChart');
+    if (!host) return;
+    host.innerHTML = `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#64748b;font-weight:600;text-align:center;padding:20px;">${message}</div>`;
+  }
+
+  function loadGoogleCharts(){
+    return new Promise((resolve, reject) => {
+      if (window.google && window.google.charts) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://www.gstatic.com/charts/loader.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load Google Charts'));
+      document.head.appendChild(s);
+    });
+  }
+
+  const cityCoords = {
+    'Bengaluru': { lat: 12.9716, lng: 77.5946 },
+    'Bangalore': { lat: 12.9716, lng: 77.5946 },
+    'Mumbai': { lat: 19.0760, lng: 72.8777 },
+    'Delhi': { lat: 28.6139, lng: 77.2090 },
+    'Chennai': { lat: 13.0827, lng: 80.2707 },
+    'Hyderabad': { lat: 17.3850, lng: 78.4867 },
+    'Pune': { lat: 18.5204, lng: 73.8567 },
+    'Kolkata': { lat: 22.5726, lng: 88.3639 },
+    'Ahmedabad': { lat: 23.0225, lng: 72.5714 },
+    'Jaipur': { lat: 26.9124, lng: 75.7873 },
+    'Other': { lat: 22.9734, lng: 78.6569 }
+  };
+
+  let activeGeoIndex = 0;
+  let geoRotateTimer = null;
+  let lastGeoChart = null;
+  let lastGeoData = null;
+
+  function getTopGeoRows(){
+    return Array.from(document.querySelectorAll('.geo-country-row[data-geo-country]')).slice(0, 3);
+  }
+
+  function updateGeoSpotlight(index){
+    const rows = getTopGeoRows();
+    if (!rows.length) return;
+    const safeIndex = ((index % rows.length) + rows.length) % rows.length;
+    rows.forEach((row, i) => row.classList.toggle('active', i === safeIndex));
+    const row = rows[safeIndex];
+    document.getElementById('geoSpotlightCountry').textContent = row.dataset.geoCountry || '--';
+    document.getElementById('geoSpotlightRevenue').textContent = row.dataset.geoRevenue || '0.00';
+    document.getElementById('geoSpotlightInvoices').textContent = `${row.dataset.geoInvoices || 0} invoices`;
+    const revenues = rows.map(r => Number(r.dataset.geoRevenue || '0'));
+    const maxRevenue = Math.max(...revenues, 1);
+    const currentRevenue = Number(row.dataset.geoRevenue || '0');
+    const pct = Math.max(18, Math.round((currentRevenue / maxRevenue) * 100));
+    document.getElementById('geoSpotlightBar').style.width = pct + '%';
+    if (lastGeoChart && lastGeoData) {
+      try { lastGeoChart.setSelection([{ row: safeIndex, column: null }]); } catch {}
+    }
+  }
+
+  function startGeoRotation(){
+    clearInterval(geoRotateTimer);
+    const rows = getTopGeoRows();
+    if (!rows.length || (document.getElementById('geoScope')?.value || 'world') !== 'world') {
+      return;
+    }
+    updateGeoSpotlight(activeGeoIndex);
+    geoRotateTimer = setInterval(() => {
+      activeGeoIndex = (activeGeoIndex + 1) % rows.length;
+      updateGeoSpotlight(activeGeoIndex);
+    }, 3000);
+  }
+
+  function drawGeoChart(){
+    const host = document.getElementById('geoChart');
+    const scope = document.getElementById('geoScope');
+    if (!host || !scope) return;
+
+    const selected = scope.value || 'world';
+    if (!window.google || !window.google.visualization) {
+      renderGeoFallback('Map library not available.');
+      return;
+    }
+
+    const chart = new google.visualization.GeoChart(host);
+    lastGeoChart = chart;
+    if (selected === 'india') {
+      clearInterval(geoRotateTimer);
+      const rows = [['City', 'Revenue']];
+      (indiaRows || []).forEach(item => {
+        const name = item.region || item.Region;
+        const revenue = Number(item.revenue ?? item.Revenue ?? 0);
+        if (name) rows.push([name + ', India', revenue]);
+      });
+      if (rows.length === 1) {
+        renderGeoFallback('No India revenue data available yet.');
+        return;
+      }
+      const data = google.visualization.arrayToDataTable(rows);
+      lastGeoData = data;
+      chart.draw(data, {
+        region: 'IN',
+        displayMode: 'markers',
+        resolution: 'provinces',
+        colorAxis: { colors: ['#fde68a', '#f59e0b', '#b45309'] },
+        datalessRegionColor: '#eceff3',
+        backgroundColor: 'transparent',
+        legend: 'none',
+        keepAspectRatio: true,
+        sizeAxis: { minValue: 0, minSize: 7, maxSize: 20 },
+        tooltip: { trigger: 'focus' }
+      });
+      document.getElementById('geoSpotlightCountry').textContent = 'India cities';
+      document.getElementById('geoSpotlightRevenue').textContent = rows.length > 1 ? (Number(rows[1][1]).toFixed(2)) : '0.00';
+      document.getElementById('geoSpotlightInvoices').textContent = 'Top city revenue';
+      document.getElementById('geoSpotlightBar').style.width = '100%';
+    } else {
+      const rows = [['Country', 'Revenue']];
+      (geographyRows || []).forEach(item => {
+        const country = item.country || item.Country;
+        const revenue = Number(item.revenue ?? item.Revenue ?? 0);
+        if (country) rows.push([country, revenue]);
+      });
+      if (rows.length === 1) {
+        renderGeoFallback('No geography revenue data available yet.');
+        return;
+      }
+      const data = google.visualization.arrayToDataTable(rows);
+      lastGeoData = data;
+      chart.draw(data, {
+        displayMode: 'regions',
+        colorAxis: { colors: ['#f8fafc', '#d4af37', '#8b6b1f'] },
+        datalessRegionColor: '#eef2f7',
+        backgroundColor: 'transparent',
+        legend: 'none',
+        keepAspectRatio: true,
+        tooltip: { trigger: 'focus' }
+      });
+      google.visualization.events.addListener(chart, 'select', function () {
+        const selection = chart.getSelection();
+        if (!selection || !selection.length) return;
+        const row = selection[0].row;
+        if (row == null) return;
+        const value = data.getValue(row, 0);
+        if (selected === 'world' && value) {
+          window.location.href = '/Invoices/Index?country=' + encodeURIComponent(String(value));
+        }
+      });
+      startGeoRotation();
+    }
+  }
+
+  window.addEventListener('load', async () => {
     setTimeout(() => requestAnimationFrame(drawDashboardCharts), 0);
+    try {
+      await loadGoogleCharts();
+      google.charts.load('current', { packages: ['geochart'] });
+      google.charts.setOnLoadCallback(drawGeoChart);
+      document.getElementById('geoScope')?.addEventListener('change', () => { activeGeoIndex = 0; drawGeoChart(); });
+      getTopGeoRows().forEach((row, index) => {
+        row.addEventListener('mouseenter', () => {
+          activeGeoIndex = index;
+          updateGeoSpotlight(activeGeoIndex);
+        });
+      });
+      window.addEventListener('resize', () => {
+        clearTimeout(window.__invoxaGeoResize);
+        window.__invoxaGeoResize = setTimeout(drawGeoChart, 120);
+      });
+    } catch (e) {
+      renderGeoFallback('Unable to load map. Please check internet access and refresh.');
+      console.error(e);
+    }
   });
 </script>
 }

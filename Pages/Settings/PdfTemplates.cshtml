@@ -1,0 +1,417 @@
+@page
+@model Invoxa.Web.Pages.Settings.PdfTemplatesModel
+@{
+    ViewData["Title"] = "PDF Templates";
+
+    var templates = new[]
+    {
+        new { Key = "default_modern", Name = "Default Modern", Accent = "#2563eb", Bg = "#eff6ff" },
+        new { Key = "clean_minimal", Name = "Clean Minimal", Accent = "#6b7280", Bg = "#f9fafb" },
+        new { Key = "gst_pro", Name = "GST Pro", Accent = "#15803d", Bg = "#f0fdf4" },
+        new { Key = "premium_classic", Name = "Premium Classic", Accent = "#a16207", Bg = "#fffbeb" },
+        new { Key = "corporate_violet", Name = "Corporate Violet", Accent = "#6d28d9", Bg = "#f5f3ff" },
+        new { Key = "alloy_farmer", Name = "Allowyfarmer", Accent = "#111827", Bg = "#f8fafc" }
+    };
+
+    var activeTaxLabel = Model.TaxEnabled ? $"{Model.TaxLabel} ({Model.TaxRate:0.##}%)" : "No tax";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="notice" style="margin-bottom:12px;">@Model.Message</div>
+}
+
+<style>
+.template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:18px}
+.template-card{border:1px solid #e5e7eb;border-radius:18px;padding:14px;background:#fff;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+.template-card.active{border:2px solid @Model.PrimaryColor; box-shadow:0 10px 24px rgba(15,23,42,.08)}
+.template-preview{height:220px;border-radius:14px;padding:14px;background:#f8fafc;border:1px solid #e5e7eb;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.template-line{height:8px;border-radius:8px;background:#cbd5e1;margin-top:8px}
+.template-table{margin-top:12px;border-top:1px solid #e5e7eb;padding-top:10px}
+.template-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.settings-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@@media (max-width:920px){.settings-grid{grid-template-columns:1fr}}
+.toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.toggle-item{padding:10px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.preview-sheet{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+.small-note{font-size:12px;color:#64748b}
+.sig-line{width:170px;border-top:1px solid #334155;padding-top:6px;text-align:center}
+.invoice-boxes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@@media (max-width:700px){.invoice-boxes{grid-template-columns:1fr}}
+</style>
+
+<div class="template-grid">
+@foreach (var item in templates)
+{
+    var isActive = Model.InvoiceTemplateKey == item.Key;
+    var accent = isActive ? Model.PrimaryColor : item.Accent;
+    var bg = isActive ? (item.Key == "premium_classic" ? "#fff7ed" : item.Bg) : item.Bg;
+
+    <div class="template-card @(isActive ? "active" : "")">
+        <div class="template-preview" style="background:@bg;">
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div style="width:52px;height:18px;border-radius:6px;background:@accent;opacity:.9"></div>
+                    <div style="font-size:11px;color:#475569;text-align:right;">INV-0001<br/>2026-03-12</div>
+                </div>
+                @if (Model.HasLogo)
+                {
+                    <img src="/api/company/logo" alt="Logo" style="max-width:90px;max-height:34px;object-fit:contain;margin-top:10px;" />
+                }
+                <div style="margin-top:14px;font-size:20px;font-weight:800;color:@accent;">@Model.CompanyName</div>
+                <div style="font-size:12px;color:#475569;">Invoice</div>
+                <div class="template-line" style="width:60%"></div>
+                <div class="template-line" style="width:48%"></div>
+                <div class="template-line" style="width:68%"></div>
+                <div class="template-table">
+                    <div style="height:18px;border-radius:8px;background:@(isActive ? Model.TableHeaderColor : accent);opacity:.95"></div>
+                    <div class="template-line" style="width:100%"></div>
+                    <div class="template-line" style="width:100%"></div>
+                    <div class="template-line" style="width:100%"></div>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div style="font-weight:800;color:@accent;">@item.Name</div>
+                @if (isActive)
+                {
+                    <span class="badge">Active</span>
+                }
+            </div>
+        </div>
+        <div class="template-actions">
+            <form method="post" asp-page-handler="UseTemplate">
+                <input type="hidden" name="key" value="@item.Key" />
+                <button class="btn primary" type="submit">Use Template</button>
+            </form>
+    <script>
+        (function () {
+            const country = document.getElementById('Country');
+            const currency = document.getElementById('DefaultCurrency');
+            const preset = document.getElementById('TaxPresetKey');
+            const taxAuto = document.getElementById('TaxAuto');
+            const taxEnabled = document.getElementById('TaxEnabled');
+            const taxLabel = document.getElementById('TaxLabel');
+            const taxRate = document.getElementById('TaxRate');
+            const showSgst = document.getElementById('ShowSgst');
+            const showCgst = document.getElementById('ShowCgst');
+            const showIgst = document.getElementById('ShowIgst');
+
+            function applyMode(mode) {
+                if (mode === 'india') {
+                    country.value = 'India';
+                    currency.value = 'INR';
+                    preset.value = 'india_gst';
+                    taxEnabled.checked = true;
+                    taxLabel.value = 'GST';
+                    taxRate.value = '18';
+                    if (showSgst) showSgst.checked = true;
+                    if (showCgst) showCgst.checked = true;
+                    if (showIgst) showIgst.checked = false;
+                }
+                if (mode === 'kuwait') {
+                    country.value = 'Kuwait';
+                    currency.value = 'KWD';
+                    preset.value = 'kuwait_vat';
+                    taxEnabled.checked = false;
+                    taxLabel.value = 'VAT';
+                    taxRate.value = '0';
+                    if (showSgst) showSgst.checked = false;
+                    if (showCgst) showCgst.checked = false;
+                    if (showIgst) showIgst.checked = false;
+                }
+                if (mode === 'usa') {
+                    country.value = 'USA';
+                    currency.value = 'USD';
+                    preset.value = 'us_sales';
+                    taxEnabled.checked = true;
+                    taxLabel.value = 'Sales Tax';
+                    taxRate.value = '8';
+                    if (showSgst) showSgst.checked = false;
+                    if (showCgst) showCgst.checked = false;
+                    if (showIgst) showIgst.checked = false;
+                }
+            }
+
+            function detectMode() {
+                const c = (country.value || '').trim().toLowerCase();
+                const cur = (currency.value || '').trim().toUpperCase();
+                const p = (preset.value || '').trim().toLowerCase();
+                if (c.includes('india') || cur === 'INR' || p === 'india_gst') return 'india';
+                if (c.includes('kuwait') || cur === 'KWD' || p === 'kuwait_vat') return 'kuwait';
+                if (c === 'us' || c.includes('usa') || c.includes('united states') || c.includes('america') || cur === 'USD' || p === 'us_sales') return 'usa';
+                return '';
+            }
+
+            function syncAuto() {
+                if (!taxAuto.checked) return;
+                const mode = detectMode();
+                if (mode) applyMode(mode);
+            }
+
+            [country, currency, preset].forEach(x => x && x.addEventListener('change', syncAuto));
+            if (taxAuto) taxAuto.addEventListener('change', syncAuto);
+        })();
+    </script>
+        </div>
+    </div>
+}
+</div>
+
+<div class="settings-grid">
+    <form method="post" asp-page-handler="Save" class="card form">
+        <div style="font-size:22px;font-weight:800;">Template Settings</div>
+        <div class="muted" style="margin-top:6px;">Choose template, country, currency, taxes, field visibility, colors, and signature block.</div>
+        <div class="small-note" style="margin-top:6px;">Logo upload and logo size are managed in Company Settings.</div>
+
+        <div style="height:14px"></div>
+        <div class="row">
+            <div class="input">
+                <label>Template</label>
+                <select asp-for="InvoiceTemplateKey">
+                    <option value="default_modern">Default Modern</option>
+                    <option value="clean_minimal">Clean Minimal</option>
+                    <option value="gst_pro">GST Pro</option>
+                    <option value="premium_classic">Premium Classic</option>
+                    <option value="corporate_violet">Corporate Violet</option>
+                    <option value="alloy_farmer">Allowyfarmer</option>
+                </select>
+            </div>
+            <div class="input">
+                <label>Default Currency</label>
+                <select asp-for="DefaultCurrency">
+                    <option value="INR">INR ₹</option>
+                    <option value="KWD">KWD KD</option>
+                    <option value="USD">USD $</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input">
+                <label>Country</label>
+                <select asp-for="Country">
+                    <option value="India">India</option>
+                    <option value="Kuwait">Kuwait</option>
+                    <option value="USA">USA</option>
+                </select>
+            </div>
+            <div class="input">
+                <label>Tax Preset</label>
+                <select asp-for="TaxPresetKey">
+                    <option value="india_gst">India GST</option>
+                    <option value="kuwait_vat">Kuwait - no tax</option>
+                    <option value="us_sales">USA Sales Tax 8%</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input"><label>Primary Color</label><input asp-for="PrimaryColor" type="color" /></div>
+            <div class="input"><label>Table Header Color</label><input asp-for="TableHeaderColor" type="color" /></div>
+        </div>
+
+        <div class="row">
+            <div class="input"><label>PDF Font Size</label><input asp-for="PdfFontSize" type="number" min="9" max="16" /></div>
+            <div class="input">
+                <label>Title Style</label>
+                <select asp-for="PdfTitleStyle">
+                    <option>Bold</option>
+                    <option>Simple</option>
+                    <option>Premium</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input">
+                <label>Tax Auto by country / currency</label>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:8px;"><input asp-for="TaxAuto" type="checkbox" id="TaxAuto" /> <span class="muted">India + INR = GST 18% ON with SGST/CGST, Kuwait + KWD = no tax, USA + USD = Sales Tax 8%.</span></div>
+            </div>
+            <div class="input">
+                <label>Enable Tax</label>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:8px;"><input asp-for="TaxEnabled" type="checkbox" id="TaxEnabled" /> <span class="muted">Use manual tax only when auto is off.</span></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input"><label>Tax Label</label><input asp-for="TaxLabel" id="TaxLabel" placeholder="GST / VAT / Sales Tax" /></div>
+            <div class="input"><label>Tax Rate %</label><input asp-for="TaxRate" id="TaxRate" type="number" step="0.01" min="0" /></div>
+        </div>
+        <div class="small-note" style="margin-bottom:10px;">Current tax behavior: <strong>@activeTaxLabel</strong></div>
+
+        <div style="font-weight:800; margin-top:8px;">Show / Hide Fields</div>
+        <div class="toggle-grid" style="margin-top:10px;">
+            <label class="toggle-item"><input asp-for="ShowHsnSac" type="checkbox" /> HSN/SAC</label>
+            <label class="toggle-item"><input asp-for="ShowPaymentDetails" type="checkbox" /> Payment Details</label>
+            <label class="toggle-item"><input asp-for="ShowTerms" type="checkbox" /> Terms &amp; Conditions</label>
+            <label class="toggle-item"><input asp-for="ShowNotes" type="checkbox" /> Notes</label>
+            <label class="toggle-item"><input asp-for="ShowSgst" type="checkbox" id="ShowSgst" /> SGST</label>
+            <label class="toggle-item"><input asp-for="ShowCgst" type="checkbox" id="ShowCgst" /> CGST</label>
+            <label class="toggle-item"><input asp-for="ShowIgst" type="checkbox" id="ShowIgst" /> IGST</label>
+            <label class="toggle-item"><input asp-for="ShowCess" type="checkbox" /> Cess</label>
+            <label class="toggle-item"><input asp-for="ShowSignature" type="checkbox" /> Signature</label>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="row">
+            <div class="input"><label>Column 1</label><input asp-for="CustomColumn1Name" /></div>
+            <div class="input"><label>Column 2</label><input asp-for="CustomColumn2Name" /></div>
+        </div>
+        <div class="row">
+            <div class="input"><label>Column 3</label><input asp-for="CustomColumn3Name" /></div>
+            <div class="input"><label>Column 4</label><input asp-for="CustomColumn4Name" /></div>
+        </div>
+
+        <div class="row">
+            <div class="input"><label>Signature Label</label><input asp-for="SignatureLabel" placeholder="Authorized Signature" /></div>
+            <div class="input"><label>Signature Name</label><input asp-for="SignatureName" placeholder="@Model.CompanyName" /></div>
+        </div>
+
+        <div class="row">
+            <div class="input" style="grid-column:1 / span 2;">
+                <label>Payment Details Text</label>
+                <textarea asp-for="PaymentDetails" rows="3" placeholder="Bank, IBAN, account name, UPI, wallet, etc."></textarea>
+            </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <button class="btn primary" type="submit">Save PDF Template Settings</button>
+    </form>
+
+    <div class="preview-sheet">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div>
+                @if (Model.HasLogo)
+                {
+                    <img src="/api/company/logo" alt="Logo" style="max-width:150px;max-height:50px;object-fit:contain;" />
+                }
+                else
+                {
+                    <div style="width:58px;height:22px;background:@Model.PrimaryColor;border-radius:8px;"></div>
+                }
+                <div style="font-size:30px;font-weight:800;margin-top:16px;color:@Model.PrimaryColor;">@Model.CompanyName</div>
+                <div style="color:#64748b;">Invoice</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-weight:800;">Invoice #: INV-0001</div>
+                <div>Issue: 2026-03-12</div>
+                <div>Due: 2026-03-19</div>
+                <div>Status: Unpaid</div>
+            </div>
+        </div>
+
+        @if (Model.InvoiceTemplateKey == "alloy_farmer")
+        {
+            <div class="invoice-boxes">
+                <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #cbd5e1;">
+                    <div style="font-size:18px;color:@Model.PrimaryColor;font-weight:700;">Seller</div>
+                    <div style="font-weight:800; margin-top:4px;">@Model.CompanyName</div>
+                    <div>@Model.Country</div>
+                    <div>GST / Bank details section supported</div>
+                </div>
+                <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #cbd5e1;">
+                    <div style="font-size:18px;color:@Model.PrimaryColor;font-weight:700;">Buyer</div>
+                    <div style="font-weight:800; margin-top:4px;">Rakesh</div>
+                    <div>Industrial invoice style preview</div>
+                    <div>TAX INVOICE layout</div>
+                </div>
+            </div>
+        }
+        else if (Model.InvoiceTemplateKey == "corporate_violet")
+        {
+            <div class="invoice-boxes">
+                <div style="background:#f5f3ff;border-radius:14px;padding:14px;">
+                    <div style="font-size:18px;color:@Model.PrimaryColor;">Billed By</div>
+                    <div style="font-weight:800; margin-top:4px;">@Model.CompanyName</div>
+                    <div>Kuwait</div>
+                    <div>Phone: +965 6586 1821</div>
+                </div>
+                <div style="background:#f5f3ff;border-radius:14px;padding:14px;">
+                    <div style="font-size:18px;color:@Model.PrimaryColor;">Billed To</div>
+                    <div style="font-weight:800; margin-top:4px;">Rakesh</div>
+                    <div>@Model.Country</div>
+                    <div>Sample client preview</div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="margin-top:18px;font-weight:800;">Bill To: Rakesh</div>
+            <div>rakeshbasavaraj23@gmail.com</div>
+            <div style="color:#64748b;">KSRTC layout #64, chitradurga</div>
+        }
+
+        <table class="table" style="margin-top:16px;">
+            <thead style="background:@Model.TableHeaderColor;color:white;">
+                <tr>
+                    @if (Model.ShowHsnSac)
+                    {
+                        <th>HSN/SAC</th>
+                    }
+                    <th>@Model.CustomColumn1Name</th>
+                    <th style="text-align:right;">@Model.CustomColumn2Name</th>
+                    <th style="text-align:right;">@Model.CustomColumn3Name</th>
+                    <th style="text-align:right;">@Model.CustomColumn4Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    @if (Model.ShowHsnSac)
+                    {
+                        <td>9983</td>
+                    }
+                    <td>UI/UX Design Service</td><td style="text-align:right;">10</td><td style="text-align:right;">500.00</td><td style="text-align:right;">5000.00</td>
+                </tr>
+                <tr>
+                    @if (Model.ShowHsnSac)
+                    {
+                        <td>9984</td>
+                    }
+                    <td>Website Dashboard</td><td style="text-align:right;">10</td><td style="text-align:right;">345.00</td><td style="text-align:right;">3450.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+            <div style="width:290px;">
+                <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><strong>@(Model.DefaultCurrency == "KWD" ? "KD" : Model.DefaultCurrency == "INR" ? "₹" : "$") 8450.00</strong></div>
+                @if (Model.TaxEnabled && Model.TaxRate > 0)
+                {
+                    @if (Model.ShowSgst && Model.ShowCgst)
+                    {
+                        <div style="display:flex;justify-content:space-between;"><span>SGST (@(Model.TaxRate/2)%)</span><span>@(Model.DefaultCurrency == "KWD" ? "KD" : Model.DefaultCurrency == "INR" ? "₹" : "$") 760.50</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span>CGST (@(Model.TaxRate/2)%)</span><span>@(Model.DefaultCurrency == "KWD" ? "KD" : Model.DefaultCurrency == "INR" ? "₹" : "$") 760.50</span></div>
+                    }
+                    else
+                    {
+                        <div style="display:flex;justify-content:space-between;"><span>@Model.TaxLabel (@Model.TaxRate%)</span><span>@(Model.DefaultCurrency == "KWD" ? "KD" : Model.DefaultCurrency == "INR" ? "₹" : "$") 1521.00</span></div>
+                    }
+                }
+                <div style="display:flex;justify-content:space-between;font-size:18px;margin-top:8px;"><strong>Total</strong><strong>@(Model.DefaultCurrency == "KWD" ? "KD" : Model.DefaultCurrency == "INR" ? "₹" : "$") @(Model.TaxEnabled && Model.TaxRate > 0 ? "9971.00" : "8450.00")</strong></div>
+            </div>
+        </div>
+
+        @if (Model.ShowPaymentDetails && !string.IsNullOrWhiteSpace(Model.PaymentDetails))
+        {
+            <div style="margin-top:16px;">
+                <div style="font-weight:800;">Payment Details</div>
+                <div class="small-note">@Model.PaymentDetails</div>
+            </div>
+        }
+
+        @if (Model.ShowSignature)
+        {
+            <div style="display:flex;justify-content:flex-end;margin-top:42px;">
+                <div class="sig-line">
+                    <div style="font-weight:700;">@Model.SignatureLabel</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.SignatureName))
+                    {
+                        <div class="small-note">@Model.SignatureName</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div style="margin-top:20px;font-style:italic;">Thanks for your business.</div>
+    </div>
+</div>

@@ -47,7 +47,7 @@ public class RegisterModel : PageModel
             PlanKey = selectedPlan,
             InvoiceLimit = limits.InvoiceLimit,
             ClientLimit = limits.ClientLimit,
-            InvoiceTemplateKey = "classic",
+            InvoiceTemplateKey = "default_modern",
             InvoicePrefix = "INV",
             NextInvoiceNumber = 1,
             TaxEnabled = false,

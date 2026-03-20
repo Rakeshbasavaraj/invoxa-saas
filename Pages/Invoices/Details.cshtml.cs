@@ -29,6 +29,7 @@ public class DetailsModel : PageModel
     }
 
     public Invoice Invoice { get; set; } = default!;
+    public Company? Company { get; set; }
     public string? Message { get; set; }
 
     public async Task<IActionResult> OnGet(Guid id)
@@ -40,7 +41,8 @@ public class DetailsModel : PageModel
     public async Task<IActionResult> OnPostDownload(Guid id)
     {
         await LoadInvoice(id);
-        var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        Company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        var company = Company;
         var companyName = company.Name;
         var bytes = _pdf.GenerateInvoicePdf(Invoice, company);
         return File(bytes, "application/pdf", $"{Invoice.InvoiceNumber}.pdf");
@@ -57,7 +59,8 @@ public class DetailsModel : PageModel
             return Page();
         }
 
-        var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        Company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        var company = Company;
         var companyName = company.Name;
 
         if (string.IsNullOrWhiteSpace(Invoice.PaymentLink))
@@ -74,19 +77,26 @@ public class DetailsModel : PageModel
         var publicUrl = $"{Request.Scheme}://{Request.Host}/i/{Invoice.PublicToken}";
         var payUrl = string.IsNullOrWhiteSpace(Invoice.PaymentLink) ? publicUrl : Invoice.PaymentLink;
 
-        var htmlBody = BuildInvoiceEmailHtml(companyName, Invoice.Client!.Name, Invoice.InvoiceNumber, Invoice.Total, payUrl, publicUrl);
+        var htmlBody = BuildInvoiceEmailHtml(companyName, Invoice.Client!.Name, Invoice.InvoiceNumber, InvoiceMoney.GetGrandTotal(Invoice, company), payUrl, publicUrl);
 
-        await _email.SendAsync(to,
-            $"Invoice {Invoice.InvoiceNumber} from {companyName}",
-            htmlBody,
-            bytes,
-            $"{Invoice.InvoiceNumber}.pdf");
+        try
+        {
+            await _email.SendAsync(to,
+                $"Invoice {Invoice.InvoiceNumber} from {companyName}",
+                htmlBody,
+                bytes,
+                $"{Invoice.InvoiceNumber}.pdf");
 
-        var companyId = await CurrentUserContext.RequireCompanyIdAsync(HttpContext, _db);
-        _db.ReminderLogs.Add(new ReminderLog { CompanyId = companyId, InvoiceId = Invoice.Id, Actor = _user.Name, Channel = "Email", Type = "InvoiceEmailSent", To = to, Notes = $"Sent invoice {Invoice.InvoiceNumber}" });
-        await _db.SaveChangesAsync();
+            var companyId = await CurrentUserContext.RequireCompanyIdAsync(HttpContext, _db);
+            _db.ReminderLogs.Add(new ReminderLog { CompanyId = companyId, InvoiceId = Invoice.Id, Actor = _user.Name, Channel = "Email", Type = "InvoiceEmailSent", To = to, Notes = $"Sent invoice {Invoice.InvoiceNumber}" });
+            await _db.SaveChangesAsync();
 
-        Message = "Email sent with payment link.";
+            Message = "Email sent with payment link.";
+        }
+        catch (Exception ex)
+        {
+            Message = "Email not sent. Check Company Settings SMTP or SendGrid configuration. Error: " + ex.Message;
+        }
         return Page();
     }
 
@@ -101,7 +111,8 @@ public class DetailsModel : PageModel
             return Page();
         }
 
-        var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        Company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        var company = Company;
         var companyName = company.Name;
 
         if (string.IsNullOrWhiteSpace(Invoice.PaymentLink))
@@ -116,7 +127,7 @@ public class DetailsModel : PageModel
 
         var publicUrl = $"{Request.Scheme}://{Request.Host}/i/{Invoice.PublicToken}";
         var payUrl = string.IsNullOrWhiteSpace(Invoice.PaymentLink) ? publicUrl : Invoice.PaymentLink;
-        var msg = $"Invoice {Invoice.InvoiceNumber} from {companyName}. Total: {Invoice.Total:0.00}. Status: {Invoice.Status}. Pay now: {payUrl}. View invoice: {publicUrl}";
+        var msg = $"Invoice {Invoice.InvoiceNumber} from {companyName}. Total: {InvoiceMoney.GetGrandTotal(Invoice, company):0.00}. Status: {Invoice.Status}. Pay now: {payUrl}. View invoice: {publicUrl}";
 
         await _wa.SendAsync(toPhone.Trim(), msg);
 
@@ -141,7 +152,8 @@ public class DetailsModel : PageModel
     public async Task<IActionResult> OnPostMarkPaid(Guid id)
     {
         await LoadInvoice(id);
-        var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        Company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        var company = Company;
 
         Invoice.Status = InvoiceStatus.Paid;
         Invoice.PaidAtUtc = DateTime.UtcNow;
@@ -157,37 +169,47 @@ public class DetailsModel : PageModel
             To = Invoice.InvoiceNumber
         });
 
+        var paidDate = Invoice.PaidAtUtc?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
+        var transactionId = $"CASH-{Invoice.Id.ToString()[..8].ToUpperInvariant()}";
+        var paymentSummary = $"Payment Mode: Cash / Manual\nReference: {transactionId}\nPaid Date: {paidDate} UTC\nAmount Paid: {InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Invoice, company), company)}\nUpdated By: {_user.Name}";
+        Invoice.Notes = MergePaymentSummary(Invoice.Notes, paymentSummary);
+
         if (!string.IsNullOrWhiteSpace(Invoice.Client?.Email))
         {
             var bytes = _pdf.GenerateInvoicePdf(Invoice, company);
-            var paidDate = Invoice.PaidAtUtc?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
-            var transactionId = $"MANUAL-{Invoice.Id.ToString()[..8].ToUpperInvariant()}";
 
             var publicUrl = $"{Request.Scheme}://{Request.Host}/i/{Invoice.PublicToken}";
-            var htmlBody = BuildPaymentReceivedEmailHtml(company.Name, Invoice.Client.Name, Invoice.InvoiceNumber, Invoice.Total, paidDate, transactionId, publicUrl);
+            var htmlBody = BuildPaymentReceivedEmailHtml(company.Name, Invoice.Client.Name, Invoice.InvoiceNumber, InvoiceMoney.GetGrandTotal(Invoice, company), paidDate, transactionId, publicUrl);
 
-            await _email.SendAsync(
-                Invoice.Client!.Email!,
-                $"Payment received for Invoice {Invoice.InvoiceNumber}",
-                htmlBody,
-                bytes,
-                $"{Invoice.InvoiceNumber}-PAID.pdf");
-
-            _db.ReminderLogs.Add(new ReminderLog
+            try
             {
-                CompanyId = company.Id,
-                InvoiceId = Invoice.Id,
-                Actor = _user.Name,
-                Channel = "Email",
-                Type = "PaymentReceivedEmailSent",
-                To = Invoice.Client.Email,
-                Notes = $"Paid receipt email sent for {Invoice.InvoiceNumber}"
-            });
+                await _email.SendAsync(
+                    Invoice.Client!.Email!,
+                    $"Payment received for Invoice {Invoice.InvoiceNumber}",
+                    htmlBody,
+                    bytes,
+                    $"{Invoice.InvoiceNumber}-PAID.pdf");
+
+                _db.ReminderLogs.Add(new ReminderLog
+                {
+                    CompanyId = company.Id,
+                    InvoiceId = Invoice.Id,
+                    Actor = _user.Name,
+                    Channel = "Email",
+                    Type = "PaymentReceivedEmailSent",
+                    To = Invoice.Client.Email,
+                    Notes = $"Paid receipt email sent for {Invoice.InvoiceNumber}"
+                });
+            }
+            catch (Exception ex)
+            {
+                Message = "Marked as Paid, but confirmation email was not sent. Error: " + ex.Message;
+            }
         }
 
         await _db.SaveChangesAsync();
 
-        Message = "Marked as Paid. Payment confirmation email sent.";
+        if (string.IsNullOrWhiteSpace(Message)) Message = "Marked as Paid. Payment confirmation email sent.";
         return Page();
     }
 
@@ -212,7 +234,8 @@ public class DetailsModel : PageModel
     public async Task<IActionResult> OnPostCreatePaymentLink(Guid id)
     {
         await LoadInvoice(id);
-        var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        Company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+        var company = Company;
 
         var url = await _pay.CreatePaymentLinkAsync(Invoice, company);
         if (string.IsNullOrWhiteSpace(url))
@@ -307,7 +330,7 @@ public class DetailsModel : PageModel
       <div style='margin:24px 0 12px 0;'>
         <a href='{viewUrl}' style='display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700;'>View Paid Invoice</a>
       </div>
-      <p style='margin:18px 0 0 0;font-size:14px;color:#64748b;line-height:1.7;'>A paid PDF copy is attached for your records.</p>
+      <p style='margin:18px 0 0 0;font-size:14px;color:#64748b;line-height:1.7;'>Attached paid invoice includes the payment slip / payment summary for future checking.</p>
       <p style='margin:20px 0 0 0;font-size:14px;color:#64748b;line-height:1.7;'>Thank you,<br>{companyName}</p>
     </div>
   </div>
@@ -315,11 +338,26 @@ public class DetailsModel : PageModel
 </html>";
     }
 
-private async Task LoadInvoice(Guid id)
+    private static string MergePaymentSummary(string? existingNotes, string paymentSummary)
+    {
+        const string prefix = "---- PAYMENT SUMMARY ----";
+        var baseNotes = existingNotes ?? string.Empty;
+        var markerIndex = baseNotes.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+        if (markerIndex >= 0)
+            baseNotes = baseNotes[..markerIndex].TrimEnd();
+
+        if (!string.IsNullOrWhiteSpace(baseNotes))
+            return baseNotes + "\n\n" + prefix + "\n" + paymentSummary.Trim();
+
+        return prefix + "\n" + paymentSummary.Trim();
+    }
+
+    private async Task LoadInvoice(Guid id)
     {
         var companyId = await CurrentUserContext.RequireCompanyIdAsync(HttpContext, _db);
         var invoice = await _db.Invoices.Include(i => i.Client).Include(i => i.Items).FirstOrDefaultAsync(i => i.Id == id && i.CompanyId == companyId);
         if (invoice is null) throw new InvalidOperationException("Invoice not found");
         Invoice = invoice;
+        Company = await _db.Companies.FirstAsync(c => c.Id == invoice.CompanyId);
     }
 }

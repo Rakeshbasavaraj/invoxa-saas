@@ -30,7 +30,7 @@ public class StripePaymentLinkService : IPaymentLinkService
             Console.WriteLine($"Company StripeSecretKey exists: {!string.IsNullOrWhiteSpace(companySecret)}");
             Console.WriteLine($"Config Stripe:SecretKey exists: {!string.IsNullOrWhiteSpace(configSecret)}");
             Console.WriteLine($"Env Stripe__SecretKey exists: {!string.IsNullOrWhiteSpace(envSecret)}");
-            Console.WriteLine($"Invoice Total: {invoice.Total}");
+            Console.WriteLine($"Invoice Total: {InvoiceMoney.GetGrandTotal(invoice, company)}");
             Console.WriteLine($"Invoice PublicToken exists: {!string.IsNullOrWhiteSpace(invoice.PublicToken)}");
             Console.WriteLine($"Company StripeCurrency: {company.StripeCurrency}");
             Console.WriteLine($"Config Stripe:Currency: {_cfg["Stripe:Currency"]}");
@@ -41,7 +41,7 @@ public class StripePaymentLinkService : IPaymentLinkService
                 return null;
             }
 
-            if (invoice.Total <= 0)
+            if (InvoiceMoney.GetGrandTotal(invoice, company) <= 0)
             {
                 Console.WriteLine("Invoice total must be greater than zero.");
                 return null;
@@ -72,7 +72,7 @@ public class StripePaymentLinkService : IPaymentLinkService
             var options = new SessionCreateOptions
             {
                 Mode = "payment",
-                SuccessUrl = $"{publicBase}/Payments/Success?token={invoice.PublicToken}&session_id={{CHECKOUT_SESSION_ID}}",
+                SuccessUrl = $"{publicBase}/Payments/Success?invoiceId={invoice.Id}&token={invoice.PublicToken}&session_id={{CHECKOUT_SESSION_ID}}",
                 CancelUrl = $"{publicBase}/Payments/Cancel?token={invoice.PublicToken}",
                 CustomerEmail = customerEmail,
                 Metadata = new Dictionary<string, string>
@@ -90,7 +90,7 @@ public class StripePaymentLinkService : IPaymentLinkService
                         PriceData = new SessionLineItemPriceDataOptions
                         {
                             Currency = currency,
-                            UnitAmount = ToMinorUnits(invoice.Total, currency),
+                            UnitAmount = ToMinorUnits(InvoiceMoney.GetGrandTotal(invoice, company), currency),
                             ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
                                 Name = $"Invoice {invoiceNumber}",

@@ -22,6 +22,7 @@
         <i class="bi bi-whatsapp"></i> Send WhatsApp Due
       </button>
     </form>
+    <a class="btn" asp-page="/Invoices/Import"><i class="bi bi-upload"></i> Import Invoices</a>
     <a class="btn" asp-page="/Invoices/Index" asp-page-handler="Export" title="Export invoices to Excel">
       <i class="bi bi-file-earmark-excel"></i> Export Excel
     </a>
@@ -39,6 +40,7 @@
 <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
   <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
     <input name="q" value="@Model.Q" placeholder="Search invoice #, client, email" style="min-width:260px;" />
+    <input name="country" value="@Model.Country" placeholder="Country" style="min-width:150px;" />
     <select name="status">
       <option value="">All Status</option>
       <option value="Draft" selected="@(string.Equals(Model.Status, "Draft", StringComparison.OrdinalIgnoreCase))">Draft</option>

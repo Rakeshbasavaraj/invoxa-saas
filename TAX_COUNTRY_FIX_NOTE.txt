@@ -1,0 +1,5 @@
+Country tax rules updated:
+- India => GST 18% with SGST + CGST
+- Kuwait => no tax
+- USA => Sales Tax 8% default (editable)
+- Added UI auto-sync between Country, Currency, and Tax Preset on PDF Templates and Company Settings pages.

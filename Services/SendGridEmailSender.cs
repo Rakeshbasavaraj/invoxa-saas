@@ -8,7 +8,7 @@ public class SendGridEmailSender : IEmailSender
     private readonly IConfiguration _config;
     public SendGridEmailSender(IConfiguration config) => _config = config;
 
-    public async Task SendAsync(string to, string subject, string body, byte[]? attachment = null, string? attachmentName = null)
+    public async Task SendAsync(string to, string subject, string body, byte[]? attachment = null, string? attachmentName = null, Guid? companyId = null)
     {
         var apiKey = _config["SendGrid:ApiKey"];
         var fromEmail = _config["SendGrid:FromEmail"];

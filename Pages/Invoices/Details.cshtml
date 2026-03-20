@@ -72,7 +72,7 @@
   </table>
 
   <div style="height:10px"></div>
-  <div style="text-align:right;font-weight:900;">Total: @Model.Invoice.Total.ToString("0.00")</div>
+  <div style="text-align:right;font-weight:900;">Total: @InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Model.Invoice, Model.Company), Model.Company)</div>
 
   @if (!string.IsNullOrWhiteSpace(Model.Message))
   {

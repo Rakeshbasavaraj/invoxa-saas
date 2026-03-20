@@ -2,10 +2,10 @@
 @model Invoxa.Web.Pages.Settings.UserModel
 @{ ViewData["Title"] = "User Settings"; }
 
-<div class="card" style="max-width:760px;margin:0 auto;">
+<div class="card" style="max-width:860px;margin:0 auto;">
   <div style="font-size:28px;font-weight:800;">User Settings</div>
   <div style="height:8px"></div>
-  <div style="color:#64748b;">Update your display name and change your login password.</div>
+  <div style="color:var(--muted);">Update your display name, change your login password, and choose the full app theme.</div>
 
   @if (!string.IsNullOrWhiteSpace(Model.Message))
   {
@@ -27,6 +27,7 @@
       <div style="height:12px"></div>
       <div class="stack">
         <button class="btn primary" type="submit">Save Name</button>
+        <a class="btn" asp-page="/Settings/PdfTemplates">PDF Templates</a>
         <a class="btn" asp-page="/Index">Back</a>
       </div>
     </form>
@@ -60,9 +61,150 @@
         <button class="btn primary" type="submit">Update Password</button>
       </div>
     </form>
+
+    <form method="post" asp-page-handler="Theme" class="form" id="themeForm">
+      <div class="theme-header-row">
+        <div>
+          <div style="font-weight:800;font-size:18px;">App Theme</div>
+          <div class="theme-helper-text">Choose your app color style, preview it instantly, then save it.</div>
+        </div>
+        <div class="theme-current-badge">Saved theme: <span id="savedThemeLabel">@Model.ThemeName</span></div>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="input">
+        <label for="ThemeName">Select full application color theme</label>
+        <select asp-for="ThemeName" id="ThemeName">
+          <option value="classic">Classic Blue</option>
+          <option value="dark">Dark SaaS</option>
+          <option value="emerald">Emerald Finance</option>
+          <option value="purple">Purple Startup</option>
+          <option value="orange">Orange Business</option>
+        </select>
+      </div>
+
+      <div class="theme-preview-grid" id="themePreviewGrid">
+        <button class="theme-swatch theme-classic" type="button" data-theme-value="classic">
+          <div class="theme-swatch-top"></div>
+          <b>Classic</b>
+          <small>Clean business look</small>
+        </button>
+        <button class="theme-swatch theme-dark" type="button" data-theme-value="dark">
+          <div class="theme-swatch-top"></div>
+          <b>Dark</b>
+          <small>Premium SaaS style</small>
+        </button>
+        <button class="theme-swatch theme-emerald" type="button" data-theme-value="emerald">
+          <div class="theme-swatch-top"></div>
+          <b>Emerald</b>
+          <small>Finance and billing</small>
+        </button>
+        <button class="theme-swatch theme-purple" type="button" data-theme-value="purple">
+          <div class="theme-swatch-top"></div>
+          <b>Purple</b>
+          <small>Modern startup look</small>
+        </button>
+        <button class="theme-swatch theme-orange" type="button" data-theme-value="orange">
+          <div class="theme-swatch-top"></div>
+          <b>Orange</b>
+          <small>Warm business style</small>
+        </button>
+      </div>
+
+      <div class="theme-live-bar">
+        <div>
+          <div class="theme-live-title">Theme preview status</div>
+          <div class="theme-live-note" id="themePreviewStatus">Ready to preview.</div>
+        </div>
+        <div class="theme-mini-palette" aria-hidden="true">
+          <span class="theme-dot theme-dot-primary"></span>
+          <span class="theme-dot theme-dot-panel"></span>
+          <span class="theme-dot theme-dot-accent"></span>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="stack">
+        <button class="btn primary" type="submit">Save Theme</button>
+        <button class="btn" type="button" id="previewThemeBtn">Preview Theme</button>
+        <button class="btn" type="button" id="resetThemeBtn">Use Saved Theme</button>
+      </div>
+    </form>
+
   </div>
 </div>
 
 @section Scripts {
   <partial name="_ValidationScriptsPartial" />
+  <script>
+    (function(){
+      var themeSelect = document.getElementById('ThemeName');
+      var form = document.getElementById('themeForm');
+      var previewBtn = document.getElementById('previewThemeBtn');
+      var resetBtn = document.getElementById('resetThemeBtn');
+      var previewStatus = document.getElementById('themePreviewStatus');
+      var savedThemeLabel = document.getElementById('savedThemeLabel');
+      var cards = Array.prototype.slice.call(document.querySelectorAll('[data-theme-value]'));
+      if(!themeSelect) return;
+
+      var allowed = ['classic','dark','emerald','purple','orange'];
+      var serverSaved = '@Model.ThemeName'.toLowerCase();
+      var savedTheme = allowed.indexOf(serverSaved) >= 0 ? serverSaved : 'classic';
+      var previewTheme = savedTheme;
+
+      function setDocumentTheme(theme){
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+
+      function updateCards(theme){
+        cards.forEach(function(card){
+          var active = card.getAttribute('data-theme-value') === theme;
+          card.classList.toggle('active', active);
+          card.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+      }
+
+      function setThemeSelection(theme, updatePreviewText){
+        previewTheme = allowed.indexOf(theme) >= 0 ? theme : 'classic';
+        themeSelect.value = previewTheme;
+        updateCards(previewTheme);
+        if(updatePreviewText && previewStatus){
+          previewStatus.textContent = 'Selected: ' + previewTheme + '. Click Preview Theme to see it live.';
+        }
+      }
+
+      setThemeSelection(savedTheme, false);
+      setDocumentTheme(savedTheme);
+      try{ localStorage.setItem('invoxa-theme', savedTheme); }catch(e){}
+      if(savedThemeLabel) savedThemeLabel.textContent = savedTheme;
+      if(previewStatus) previewStatus.textContent = 'Saved theme loaded: ' + savedTheme + '.';
+
+      themeSelect.addEventListener('change', function(){
+        setThemeSelection(themeSelect.value || 'classic', true);
+      });
+
+      cards.forEach(function(card){
+        card.addEventListener('click', function(){
+          setThemeSelection(card.getAttribute('data-theme-value') || 'classic', true);
+        });
+      });
+
+      previewBtn?.addEventListener('click', function(){
+        setDocumentTheme(previewTheme);
+        if(previewStatus) previewStatus.textContent = 'Preview active: ' + previewTheme + '. Click Save Theme to keep it.';
+      });
+
+      resetBtn?.addEventListener('click', function(){
+        setThemeSelection(savedTheme, false);
+        setDocumentTheme(savedTheme);
+        if(previewStatus) previewStatus.textContent = 'Reverted to saved theme: ' + savedTheme + '.';
+      });
+
+      form?.addEventListener('submit', function(){
+        var selected = themeSelect.value || 'classic';
+        try{ localStorage.setItem('invoxa-theme', selected); }catch(e){}
+        setDocumentTheme(selected);
+      });
+    })();
+  </script>
 }

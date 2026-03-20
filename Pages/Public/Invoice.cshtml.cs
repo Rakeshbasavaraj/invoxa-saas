@@ -23,6 +23,7 @@ public class InvoiceModel : PageModel
     public string Token { get; set; } = "";
     public Invoice? Invoice { get; set; }
     public string CompanyName { get; set; } = "";
+    public Company? Company { get; set; }
     public string? PaymentMessage { get; set; }
 
     public async Task OnGet(string token)
@@ -43,12 +44,13 @@ public class InvoiceModel : PageModel
                 await _db.SaveChangesAsync();
             }
 
-            var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+            Company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
+            var company = Company;
             CompanyName = company.Name;
 
             if (!string.IsNullOrWhiteSpace(Invoice.PublicToken) &&
                 string.IsNullOrWhiteSpace(Invoice.PaymentLink) &&
-                Invoice.Total > 0 &&
+                InvoiceMoney.GetGrandTotal(Invoice, company) > 0 &&
                 Invoice.Status != InvoiceStatus.Paid)
             {
                 var paymentUrl = await _pay.CreatePaymentLinkAsync(Invoice, company);

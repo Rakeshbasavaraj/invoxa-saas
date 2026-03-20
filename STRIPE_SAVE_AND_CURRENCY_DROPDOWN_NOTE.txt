@@ -1,0 +1,4 @@
+Fixes applied:
+1. Saving Stripe settings no longer tries to bulk-create payment links for all old invoices, which could cause the settings page to fail after the keys were already saved.
+2. Stripe currency is now a dropdown with INR, KWD, and USD.
+3. Payment links are still created on demand from invoice/public pages.

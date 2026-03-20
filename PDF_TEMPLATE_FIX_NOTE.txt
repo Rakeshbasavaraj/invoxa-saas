@@ -1,0 +1,11 @@
+PDF template selection fix applied:
+- PDF template settings now save against the CURRENT logged-in company instead of always saving to the first company in the database.
+- Allowyfarmer settings now also save against the CURRENT logged-in company.
+
+Why it was failing:
+- When multiple companies/users existed, the PDF template page was updating the first company record.
+- Invoice download uses the invoice's real CompanyId, so the downloaded PDF kept using the old template.
+
+Files changed:
+- Pages/Settings/PdfTemplates.cshtml.cs
+- Pages/Settings/AllowyFarmer.cshtml.cs

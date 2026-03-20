@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AnVEO+sOaDU=",
+  "dgSpecHash": "JuQtT0m3IBw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Lenovo\\Downloads\\Invoxa-final-tabs-overdue-stripe\\Invoxa.Web.csproj",
+  "projectFilePath": "C:\\Users\\Lenovo\\Downloads\\Invoxa-theme-v8-email-safe-fix-stripe-save-currency-dropdown-fixed\\Invoxa.Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Lenovo\\.nuget\\packages\\closedxml\\0.104.2\\closedxml.0.104.2.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\closedxml.parser\\1.2.0\\closedxml.parser.1.2.0.nupkg.sha512",
@@ -36,6 +36,7 @@
     "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\Lenovo\\.nuget\\packages\\qrcoder\\1.6.0\\qrcoder.1.6.0.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\questpdf\\2024.3.0\\questpdf.2024.3.0.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\rbush\\4.0.0\\rbush.4.0.0.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\sendgrid\\9.29.3\\sendgrid.9.29.3.nupkg.sha512",

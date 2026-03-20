@@ -23,6 +23,9 @@ public class UserModel : PageModel
     [BindProperty]
     public ChangePasswordInputModel PasswordInput { get; set; } = new();
 
+    [BindProperty]
+    public string ThemeName { get; set; } = "classic";
+
     public string? Message { get; set; }
 
     public void OnGet(string? message = null)
@@ -30,6 +33,8 @@ public class UserModel : PageModel
         Message = message;
         if (Request.Cookies.TryGetValue("invoxa_user", out var v) && !string.IsNullOrWhiteSpace(v))
             UserName = v;
+        if (Request.Cookies.TryGetValue("invoxa_theme", out var t) && !string.IsNullOrWhiteSpace(t))
+            ThemeName = t;
     }
 
     public IActionResult OnPostProfile()
@@ -50,6 +55,28 @@ public class UserModel : PageModel
         });
 
         return RedirectToPage(new { message = "Saved. Logs will now show this user name." });
+    }
+
+
+
+    public IActionResult OnPostTheme()
+    {
+        var allowed = new[] { "classic", "dark", "emerald", "purple", "orange" };
+        var theme = (ThemeName ?? "classic").Trim().ToLowerInvariant();
+        if (!allowed.Contains(theme))
+            theme = "classic";
+
+        Response.Cookies.Append("invoxa_theme", theme, new CookieOptions
+        {
+            Expires = DateTimeOffset.UtcNow.AddYears(1),
+            IsEssential = true,
+            HttpOnly = false,
+            SameSite = SameSiteMode.Lax,
+            Secure = false,
+            Path = "/"
+        });
+
+        return RedirectToPage(new { message = "Theme saved successfully." });
     }
 
     public async Task<IActionResult> OnPostPasswordAsync()

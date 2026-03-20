@@ -35,6 +35,10 @@ public class IndexModel : PageModel
     public List<string> TopClientLabels { get; set; } = new();
     public List<decimal> TopClientValues { get; set; } = new();
 
+    public List<GeographyRevenueVm> GeographyRevenue { get; set; } = new();
+    public List<RegionRevenueVm> IndiaStateRevenue { get; set; } = new();
+    public List<ActivityVm> RecentActivities { get; set; } = new();
+
     public async Task OnGet(int? days, string? message = null)
     {
         Message = message;
@@ -112,6 +116,103 @@ public class IndexModel : PageModel
 
         TopClientLabels = top.Select(x => x.Client).ToList();
         TopClientValues = top.Select(x => x.Amount).ToList();
+
+        GeographyRevenue = invoices
+            .Where(i => i.Status == Domain.InvoiceStatus.Paid && i.Client != null && !string.IsNullOrWhiteSpace(i.Client!.Country))
+            .GroupBy(i => NormalizeCountry(i.Client!.Country!))
+            .Select(g => new GeographyRevenueVm
+            {
+                Country = g.Key,
+                CountryCode = GetCountryCode(g.Key),
+                Revenue = g.Sum(x => x.Total),
+                InvoiceCount = g.Count()
+            })
+            .Where(x => !string.IsNullOrWhiteSpace(x.CountryCode))
+            .OrderByDescending(x => x.Revenue)
+            .Take(8)
+            .ToList();
+
+        IndiaStateRevenue = invoices
+            .Where(i => i.Status == Domain.InvoiceStatus.Paid && i.Client != null && NormalizeCountry(i.Client!.Country ?? string.Empty) == "India")
+            .GroupBy(i => string.IsNullOrWhiteSpace(i.Client!.City) ? "Other" : i.Client!.City!.Trim())
+            .Select(g => new RegionRevenueVm
+            {
+                Region = g.Key,
+                Revenue = g.Sum(x => x.Total)
+            })
+            .OrderByDescending(x => x.Revenue)
+            .Take(5)
+            .ToList();
+
+        RecentActivities = await _db.ReminderLogs
+            .Where(x => x.CompanyId == companyId)
+            .OrderByDescending(x => x.SentAtUtc)
+            .Take(6)
+            .Select(x => new ActivityVm
+            {
+                Channel = x.Channel,
+                Type = x.Type,
+                Target = x.To,
+                Notes = x.Notes,
+                SentAtUtc = x.SentAtUtc
+            })
+            .ToListAsync();
+    }
+
+    private static string NormalizeCountry(string country)
+    {
+        var value = (country ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        var key = value.ToLowerInvariant();
+        return key switch
+        {
+            "kuwait" or "kw" or "state of kuwait" => "Kuwait",
+            "india" or "in" or "bharat" => "India",
+            "uae" or "u.a.e" or "united arab emirates" or "ae" => "United Arab Emirates",
+            "usa" or "us" or "united states" or "united states of america" => "United States",
+            "saudi" or "saudi arabia" or "ksa" => "Saudi Arabia",
+            "qatar" => "Qatar",
+            "oman" => "Oman",
+            "bahrain" => "Bahrain",
+            _ => System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(key)
+        };
+    }
+
+    private static string GetCountryCode(string country) => country switch
+    {
+        "Kuwait" => "KW",
+        "India" => "IN",
+        "United Arab Emirates" => "AE",
+        "United States" => "US",
+        "Saudi Arabia" => "SA",
+        "Qatar" => "QA",
+        "Oman" => "OM",
+        "Bahrain" => "BH",
+        _ => string.Empty
+    };
+
+    public class GeographyRevenueVm
+    {
+        public string Country { get; set; } = string.Empty;
+        public string CountryCode { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+        public int InvoiceCount { get; set; }
+    }
+
+    public class RegionRevenueVm
+    {
+        public string Region { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+    }
+
+
+    public class ActivityVm
+    {
+        public string Channel { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string? Target { get; set; }
+        public string? Notes { get; set; }
+        public DateTime SentAtUtc { get; set; }
     }
 
     public class RecentInvoiceVm

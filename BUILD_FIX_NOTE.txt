@@ -1,0 +1,3 @@
+Build fix applied:
+- Added missing ExtractPaymentSummary method
+- Added missing RemovePaymentSummary method

@@ -1,0 +1,84 @@
+@page
+@model Invoxa.Web.Pages.Invoices.ImportModel
+@{ ViewData["Title"] = "Import Invoices"; }
+
+<div class="stack">
+  <a class="btn" asp-page="/Invoices/Index"><i class="bi bi-arrow-left"></i> Back to Invoices</a>
+  <a class="btn" asp-page-handler="DownloadSample"><i class="bi bi-download"></i> Download Sample</a>
+</div>
+<div style="height:12px"></div>
+
+<div class="card">
+  <div style="font-weight:800;font-size:20px;">Import Invoices</div>
+  <div class="import-helper" style="margin-top:6px;">Upload CSV or Excel (.xlsx). Rows with the same InvoiceNo will be grouped into one invoice with multiple items. Failed rows are not added.</div>
+
+  @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+  {
+    <div style="height:12px"></div>
+    <div class="alert success">@Model.StatusMessage</div>
+  }
+  @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+  {
+    <div style="height:12px"></div>
+    <div class="alert error">@Model.ErrorMessage</div>
+  }
+
+  <div style="height:14px"></div>
+  <form method="post" enctype="multipart/form-data" class="form" style="max-width:none;">
+    <div class="row">
+      <div class="input">
+        <label>Upload file</label>
+        <input type="file" name="upload" accept=".csv,.xlsx" required />
+      </div>
+      <div class="input">
+        <label>Supported columns</label>
+        <div class="notice">InvoiceNo, ClientEmail, ClientName, Country, City, IssueDate, DueDate, Description, Qty, UnitPrice, Status</div>
+      </div>
+    </div>
+    <button type="submit" class="btn primary"><i class="bi bi-upload"></i> Import Now</button>
+  </form>
+
+  <div class="import-summary">
+    <div class="import-stat">
+      <div class="import-helper">Invoices created</div>
+      <strong>@Model.CreatedInvoiceCount</strong>
+    </div>
+    <div class="import-stat">
+      <div class="import-helper">Rows imported</div>
+      <strong>@Model.ImportedRowCount</strong>
+    </div>
+    <div class="import-stat">
+      <div class="import-helper">Skipped / Failed rows</div>
+      <strong>@Model.FailedRows.Count</strong>
+    </div>
+  </div>
+
+  @if (Model.FailedRows.Any())
+  {
+    <div style="height:16px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="font-weight:800;">Failed Rows (not added)</div>
+      <a class="btn" asp-page-handler="DownloadFailed"><i class="bi bi-download"></i> Download Failed Rows</a>
+    </div>
+    <div style="height:10px"></div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Row</th><th>Invoice</th><th>Client</th><th>Description</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model.FailedRows)
+        {
+          <tr>
+            <td>@row.RowNumber</td>
+            <td>@row.InvoiceNo</td>
+            <td>@(row.ClientName ?? row.ClientEmail)</td>
+            <td>@row.Description</td>
+            <td>@row.Error</td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

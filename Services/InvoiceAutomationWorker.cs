@@ -195,7 +195,7 @@ private async Task<TimeSpan> GetCurrentDelayAsync(CancellationToken ct)
         var dueTxt = inv.DueDate.ToString("yyyy-MM-dd");
         var baseUrl = _cfg["App:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5000";
         var viewUrl = $"{baseUrl}/i/{inv.PublicToken}";
-        if (string.IsNullOrWhiteSpace(inv.PaymentLink) && inv.Total > 0)
+        if (string.IsNullOrWhiteSpace(inv.PaymentLink) && InvoiceMoney.GetGrandTotal(inv, company) > 0)
         {
             var paymentUrl = await pay.CreatePaymentLinkAsync(inv, company, ct);
             if (!string.IsNullOrWhiteSpace(paymentUrl))
@@ -245,7 +245,7 @@ private async Task<TimeSpan> GetCurrentDelayAsync(CancellationToken ct)
       <p style='margin:0 0 16px 0;font-size:15px;line-height:1.7;'>{intro}</p>
       <div style='background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:18px 0;'>
         <div style='font-size:14px;color:#64748b;'>Amount Due</div>
-        <div style='font-size:28px;font-weight:800;margin-top:6px;'>{inv.Total:0.00}</div>
+        <div style='font-size:28px;font-weight:800;margin-top:6px;'>{InvoiceMoney.GetGrandTotal(inv, company):0.00}</div>
         <div style='font-size:14px;color:#64748b;margin-top:8px;'>Due Date: {dueTxt}</div>
       </div>
       <div style='margin:24px 0 12px 0;'>
@@ -266,7 +266,7 @@ private async Task<TimeSpan> GetCurrentDelayAsync(CancellationToken ct)
         {
             var bytes = pdf.GenerateInvoicePdf(inv, company);
             var html = BuildReminderHtml();
-            await email.SendAsync(toEmail, subject, html, bytes, $"{inv.InvoiceNumber}.pdf");
+            await email.SendAsync(toEmail, subject, html, bytes, $"{inv.InvoiceNumber}.pdf", company.Id);
 
             db.ReminderLogs.Add(new ReminderLog
             {
@@ -286,9 +286,9 @@ private async Task<TimeSpan> GetCurrentDelayAsync(CancellationToken ct)
         {
             var msg = type switch
             {
-                "AutoPreDue" => $"Hi {inv.Client!.Name}, reminder: invoice {inv.InvoiceNumber} for {inv.Total:0.00} is due on {dueTxt}. Please pay by the due date. Pay now: {payUrl} View invoice: {viewUrl}",
-                "AutoDue" => $"Hi {inv.Client!.Name}, invoice {inv.InvoiceNumber} for {inv.Total:0.00} is due today. Pay now: {payUrl} View invoice: {viewUrl}",
-                _ => $"Hi {inv.Client!.Name}, invoice {inv.InvoiceNumber} for {inv.Total:0.00} is overdue since {dueTxt}. Please pay now: {payUrl} View invoice: {viewUrl}"
+                "AutoPreDue" => $"Hi {inv.Client!.Name}, reminder: invoice {inv.InvoiceNumber} for {InvoiceMoney.GetGrandTotal(inv, company):0.00} is due on {dueTxt}. Please pay by the due date. Pay now: {payUrl} View invoice: {viewUrl}",
+                "AutoDue" => $"Hi {inv.Client!.Name}, invoice {inv.InvoiceNumber} for {InvoiceMoney.GetGrandTotal(inv, company):0.00} is due today. Pay now: {payUrl} View invoice: {viewUrl}",
+                _ => $"Hi {inv.Client!.Name}, invoice {inv.InvoiceNumber} for {InvoiceMoney.GetGrandTotal(inv, company):0.00} is overdue since {dueTxt}. Please pay now: {payUrl} View invoice: {viewUrl}"
             };
             try
             {

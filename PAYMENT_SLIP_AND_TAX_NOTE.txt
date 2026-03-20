@@ -1,0 +1,7 @@
+Updates included:
+1. Stripe / online payment already charges Grand Total including tax. Verified from StripePaymentLinkService using InvoiceMoney.GetGrandTotal(...).
+2. Public invoice page now shows subtotal + tax + total clearly.
+3. On online payment success, invoice notes are updated with payment summary (mode, transaction ID, date, amount).
+4. Paid invoice PDF now shows a Payment Slip / Payment Summary block.
+5. Manual Mark Paid now records Cash / Manual payment summary and the paid PDF shows it.
+6. Receipt email keeps the paid invoice PDF attached so later you can verify payment details.

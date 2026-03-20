@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Invoxa.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+47562f4d95dbb37936c6ecb8592a45d388dabc1b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Invoxa.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Invoxa.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

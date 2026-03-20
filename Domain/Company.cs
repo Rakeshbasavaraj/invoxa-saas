@@ -5,49 +5,62 @@ public class Company : BaseEntity
     public string Name { get; set; } = "";
     public string TimeZone { get; set; } = "UTC";
 
-    // Address / business details (optional)
     public string? AddressLine1 { get; set; }
     public string? AddressLine2 { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; }
     public string? VatNumber { get; set; }
 
-    // PDF footer text (editable)
     public string? ThankYouNote { get; set; }
     public string? TermsAndConditions { get; set; }
+    public string? PaymentDetails { get; set; }
 
-
-    // Tax settings (optional)
-    public bool TaxAuto { get; set; } = true; // auto-apply based on Country
-    // Presets: india_gst, kuwait_vat, us_sales
+    public bool TaxAuto { get; set; } = true;
     public bool TaxEnabled { get; set; } = false;
     public string? TaxPresetKey { get; set; } = "kuwait_vat";
     public string? TaxLabel { get; set; } = "Tax";
     public decimal TaxRate { get; set; } = 0m;
 
-    // PDF template + branding (optional)
-    // Example keys: classic, modern, minimal, professional_blue
-    public string? InvoiceTemplateKey { get; set; } = "classic";
+    public string? DefaultCurrency { get; set; } = "INR";
+    public string? InvoiceTemplateKey { get; set; } = "default_modern";
+    public string? TemplateDisplayName { get; set; } = "Default Modern";
+    public string? PrimaryColor { get; set; } = "#2563eb";
+    public string? TableHeaderColor { get; set; } = "#1d4ed8";
+    public int PdfFontSize { get; set; } = 11;
+    public string? PdfTitleStyle { get; set; } = "Bold";
 
+    public bool ShowHsnSac { get; set; }
+    public bool ShowSgst { get; set; }
+    public bool ShowCgst { get; set; }
+    public bool ShowIgst { get; set; }
+    public bool ShowCess { get; set; }
+    public bool ShowTerms { get; set; } = true;
+    public bool ShowNotes { get; set; } = true;
+    public bool ShowPaymentDetails { get; set; }
+    public bool ShowSignature { get; set; }
+    public string? SignatureLabel { get; set; } = "Authorized Signature";
+    public string? SignatureName { get; set; }
 
+    public string? CustomColumn1Name { get; set; } = "Item";
+    public string? CustomColumn2Name { get; set; } = "Qty";
+    public string? CustomColumn3Name { get; set; } = "Unit Price";
+    public string? CustomColumn4Name { get; set; } = "Total";
 
-    // SaaS plan + approval
-    public string ApprovalStatus { get; set; } = "Active"; // Pending, Active, Suspended
+    public string ApprovalStatus { get; set; } = "Active";
     public DateTime? ApprovedAtUtc { get; set; }
-    public string PlanKey { get; set; } = "Free"; // Free, Starter, Pro
+    public string PlanKey { get; set; } = "Free";
     public int InvoiceLimit { get; set; } = 10;
     public int ClientLimit { get; set; } = 5;
 
-    // Invoice numbering
-    // Example: Prefix = "INV" -> INV-0001, INV-0002...
     public string InvoicePrefix { get; set; } = "INV";
     public int NextInvoiceNumber { get; set; } = 1;
 
-    // Logo stored in DB (optional)
     public byte[]? LogoBytes { get; set; }
     public string? LogoContentType { get; set; }
+    public int? LogoWidth { get; set; } = 160;
+    public int? LogoHeight { get; set; }
+    public string? LogoFitMode { get; set; } = "contain";
 
-    // Email (SMTP) settings (optional)
     public string? EmailFromName { get; set; }
     public string? EmailFromAddress { get; set; }
     public string? SmtpHost { get; set; }
@@ -56,19 +69,38 @@ public class Company : BaseEntity
     public string? SmtpPassword { get; set; }
     public bool SmtpUseSsl { get; set; } = true;
 
-
-    // Stripe payment settings (optional, company-level)
     public string? StripePublishableKey { get; set; }
     public string? StripeSecretKey { get; set; }
     public string? StripeCurrency { get; set; } = "usd";
 
-    // Automation settings
     public int ReminderDaysBeforeDue { get; set; } = 2;
     public int AutomationIntervalValue { get; set; } = 1;
     public string AutomationIntervalUnit { get; set; } = "Minutes";
 
-    // Overdue reminder settings
     public bool OverdueReminderEnabled { get; set; } = true;
     public int OverdueReminderIntervalValue { get; set; } = 1;
     public string OverdueReminderIntervalUnit { get; set; } = "Days";
+
+    // Allowyfarmer fixed industrial template settings
+    public string? AllowyFarmerCompanyName { get; set; }
+    public string? AllowyFarmerAddressLine1 { get; set; }
+    public string? AllowyFarmerAddressLine2 { get; set; }
+    public string? AllowyFarmerCityLine { get; set; }
+    public string? AllowyFarmerWebsite { get; set; }
+    public string? AllowyFarmerPhone { get; set; }
+    public string? AllowyFarmerGstNumber { get; set; }
+
+    public string? AllowyFarmerInvoicePrefix { get; set; }
+    public string? AllowyFarmerDefaultDeliveryNote { get; set; }
+    public string? AllowyFarmerDefaultModeTerms { get; set; }
+    public string? AllowyFarmerDefaultHsnCode { get; set; }
+
+    public string? AllowyFarmerBankBeneficiary { get; set; }
+    public string? AllowyFarmerBankAccountNumber { get; set; }
+    public string? AllowyFarmerBankAccountType { get; set; }
+    public string? AllowyFarmerBankName { get; set; }
+    public string? AllowyFarmerBankBranch { get; set; }
+    public string? AllowyFarmerBankIfscCode { get; set; }
+    public string? AllowyFarmerFooterNote { get; set; }
+
 }

@@ -33,9 +33,9 @@
       <select asp-for="TaxPresetKey" id="taxPreset">
         <option value="kuwait_vat">Kuwait (VAT 0%)</option>
         <option value="india_gst">India (GST 18%)</option>
-        <option value="us_sales">USA (Sales Tax 0% default)</option>
+        <option value="us_sales">USA (Sales Tax 8%)</option>
       </select>
-      <div class="muted" style="margin-top:6px">Pick a preset to auto-fill tax label & rate. You can edit the rate anytime.</div>
+      <div class="muted" style="margin-top:6px">Pick a preset to auto-fill tax label & rate. India = GST 18% with SGST/CGST, Kuwait = no tax, USA = Sales Tax 8%. You can edit the rate anytime.</div>
     </div>
 
     <div class="input">
@@ -64,15 +64,26 @@
       const label = document.getElementById('taxLabel');
       const rate = document.getElementById('taxRate');
       const enabled = document.getElementById('taxEnabled');
+      const country = document.getElementById('Country');
 
       function applyPreset() {
         const v = preset.value;
-        if (v === 'kuwait_vat') { label.value = 'VAT'; rate.value = '0'; enabled.checked = false; }
-        if (v === 'india_gst') { label.value = 'GST'; rate.value = '18'; enabled.checked = true; }
-        if (v === 'us_sales') { label.value = 'Sales Tax'; rate.value = '0'; enabled.checked = false; }
+        if (v === 'kuwait_vat') { label.value = 'VAT'; rate.value = '0'; enabled.checked = false; if (country) country.value = 'Kuwait'; }
+        if (v === 'india_gst') { label.value = 'GST'; rate.value = '18'; enabled.checked = true; if (country) country.value = 'India'; }
+        if (v === 'us_sales') { label.value = 'Sales Tax'; rate.value = '8'; enabled.checked = true; if (country) country.value = 'USA'; }
+      }
+
+      function applyCountry() {
+        if (!country) return;
+        const v = (country.value || '').trim().toLowerCase();
+        if (v.includes('india')) preset.value = 'india_gst';
+        else if (v.includes('kuwait')) preset.value = 'kuwait_vat';
+        else if (v === 'us' || v.includes('usa') || v.includes('united states') || v.includes('america')) preset.value = 'us_sales';
+        applyPreset();
       }
 
       preset.addEventListener('change', applyPreset);
+      if (country) country.addEventListener('change', applyCountry);
     })();
   </script>
 
@@ -98,10 +109,13 @@
     <div class="input">
       <label>Invoice PDF Template</label>
       <select asp-for="InvoiceTemplateKey">
-        <option value="classic">Classic</option>
-        <option value="professional_blue">Professional Blue</option>
+        <option value="default_modern">Default Modern</option>
+        <option value="clean_minimal">Clean Minimal</option>
+        <option value="gst_pro">GST Pro</option>
+        <option value="premium_classic">Premium Classic</option>
+        <option value="corporate_violet">Corporate Violet</option>
       </select>
-      <div class="muted" style="margin-top:6px">Classic = simple. Professional Blue = like Zoho style with blue table header.</div>
+      <div class="muted" style="margin-top:6px">For full color, field toggle, and template preview settings, open the PDF Templates page from the left menu.</div>
     </div>
 
     <div class="input">
@@ -118,6 +132,35 @@
           <div class="muted" style="margin-top:6px">Current logo is saved. Upload a new logo to replace.</div>
         </div>
       }
+    </div>
+  </div>
+
+  <div class="card" style="padding:14px;border:1px solid #e5e7eb;margin-top:14px;">
+    <div style="font-weight:800;margin-bottom:8px;">Logo Size Settings</div>
+    <div class="row">
+      <div class="input">
+        <label>Logo Width (px)</label>
+        <input asp-for="LogoWidth" type="number" min="60" max="320" />
+        <div class="muted" style="margin-top:6px;">Recommended: 140 to 200 px</div>
+      </div>
+      <div class="input">
+        <label>Logo Height (px, optional)</label>
+        <input asp-for="LogoHeight" type="number" min="20" max="180" placeholder="Auto" />
+        <div class="muted" style="margin-top:6px;">Leave empty to auto-fit height.</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input">
+        <label>Logo Fit Mode</label>
+        <select asp-for="LogoFitMode">
+          <option value="contain">Contain</option>
+          <option value="fit">Fit Area</option>
+        </select>
+      </div>
+      <div class="input">
+        <label>Preview</label>
+        <div class="muted" style="margin-top:10px;">Saved logo size will be used in invoice PDFs and premium templates.</div>
+      </div>
     </div>
   </div>
 
@@ -197,17 +240,39 @@
     <div class="muted" style="margin-bottom:10px;">Paste your Stripe test or live keys here to enable the Pay Now button on public invoices.</div>
 
     <div class="row">
-      <div class="input"><label>Stripe Publishable Key</label><input asp-for="StripePublishableKey" placeholder="pk_test_..." /></div>
-      <div class="input"><label>Stripe Secret Key</label><input asp-for="StripeSecretKey" type="password" placeholder="(leave blank to keep saved)" />
+      <div class="input">
+        <label>Stripe Publishable Key</label>
+        <input asp-for="StripePublishableKey" placeholder="pk_test_..." />
+        @if (!string.IsNullOrWhiteSpace(Model.StripePublishablePreview))
+        {
+          <div class="muted" style="margin-top:6px;color:#166534;">Saved key: @Model.StripePublishablePreview</div>
+        }
+      </div>
+      <div class="input">
+        <label>Stripe Secret Key</label>
+        <input asp-for="StripeSecretKey" type="password" placeholder="Enter key and click Save Stripe Settings" />
         @if (Model.HasSavedStripeSecret)
         {
-          <div class="muted" style="margin-top:6px;color:#166534;">Stripe secret key is already saved.</div>
+          <div class="muted" style="margin-top:6px;color:#166534;">Saved secret: @Model.StripeSecretPreview</div>
+          <div class="muted" style="margin-top:4px;">Leave blank only when you want to keep the existing saved secret key.</div>
+        }
+        else
+        {
+          <div class="muted" style="margin-top:6px;">Paste the Stripe secret key and click Save Stripe Settings.</div>
         }
       </div>
     </div>
 
     <div class="row">
-      <div class="input"><label>Stripe Currency</label><input asp-for="StripeCurrency" placeholder="usd / kwd / eur" /></div>
+      <div class="input">
+        <label>Stripe Currency</label>
+        <select asp-for="StripeCurrency">
+          <option value="inr">INR</option>
+          <option value="kwd">KWD</option>
+          <option value="usd">USD</option>
+        </select>
+        <div class="muted" style="margin-top:6px;">Choose the payment currency from the dropdown.</div>
+      </div>
       <div class="input"><label>How to test</label><div class="muted" style="padding-top:10px;">Use test keys from Stripe Dashboard → Developers → API keys. Example test card: 4242 4242 4242 4242.</div></div>
     </div>
 

@@ -26,31 +26,40 @@ public class SuccessModel : PageModel
     }
 
     public Invoxa.Web.Domain.Invoice? Invoice { get; set; }
+    public Company? Company { get; set; }
     public string? Message { get; set; }
 
-    public async Task<IActionResult> OnGet(string token, string? session_id = null)
+    public async Task<IActionResult> OnGet(string? token, string? session_id = null, Guid? invoiceId = null)
     {
-        Invoice = await _db.Invoices
-            .Include(i => i.Client)
-            .Include(i => i.Items)
-            .FirstOrDefaultAsync(i => i.PublicToken == token);
-
-        if (Invoice == null)
-        {
-            Message = "Invoice not found.";
-            return Page();
-        }
-
-        var company = await _db.Companies.FirstAsync(c => c.Id == Invoice.CompanyId);
-
         if (string.IsNullOrWhiteSpace(session_id))
         {
             Message = "Missing payment session.";
             return Page();
         }
 
-        var secret = !string.IsNullOrWhiteSpace(company.StripeSecretKey)
-            ? company.StripeSecretKey!.Trim()
+        // Load invoice first by direct query params when available.
+        if (invoiceId.HasValue)
+        {
+            Invoice = await _db.Invoices
+                .Include(i => i.Client)
+                .Include(i => i.Items)
+                .FirstOrDefaultAsync(i => i.Id == invoiceId.Value);
+        }
+
+        if (Invoice == null && !string.IsNullOrWhiteSpace(token))
+        {
+            Invoice = await _db.Invoices
+                .Include(i => i.Client)
+                .Include(i => i.Items)
+                .FirstOrDefaultAsync(i => i.PublicToken == token);
+        }
+
+        Company = Invoice == null
+            ? null
+            : await _db.Companies.FirstOrDefaultAsync(c => c.Id == Invoice.CompanyId);
+
+        var secret = !string.IsNullOrWhiteSpace(Company?.StripeSecretKey)
+            ? Company!.StripeSecretKey!.Trim()
             : _cfg["Stripe:SecretKey"]?.Trim();
         if (string.IsNullOrWhiteSpace(secret))
         {
@@ -62,9 +71,45 @@ public class SuccessModel : PageModel
         var sessionService = new SessionService();
         var session = await sessionService.GetAsync(session_id);
 
-        if (!string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
+        // Fallback: recover invoice from Stripe metadata if query token did not match.
+        if (Invoice == null)
         {
-            Message = "Payment is not completed yet.";
+            if (session.Metadata != null && session.Metadata.TryGetValue("invoiceId", out var metaInvoiceId) && Guid.TryParse(metaInvoiceId, out var parsedInvoiceId))
+            {
+                Invoice = await _db.Invoices
+                    .Include(i => i.Client)
+                    .Include(i => i.Items)
+                    .FirstOrDefaultAsync(i => i.Id == parsedInvoiceId);
+            }
+
+            if (Invoice == null && session.Metadata != null && session.Metadata.TryGetValue("publicToken", out var metaToken) && !string.IsNullOrWhiteSpace(metaToken))
+            {
+                Invoice = await _db.Invoices
+                    .Include(i => i.Client)
+                    .Include(i => i.Items)
+                    .FirstOrDefaultAsync(i => i.PublicToken == metaToken);
+            }
+
+            if (Invoice != null)
+            {
+                Company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == Invoice.CompanyId);
+            }
+        }
+
+        if (Invoice == null || Company == null)
+        {
+            Message = "Invoice not found for this payment session.";
+            return Page();
+        }
+
+        var company = Company;
+
+        var isPaid = string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(session.Status, "complete", StringComparison.OrdinalIgnoreCase);
+
+        if (!isPaid)
+        {
+            Message = "Payment is not completed yet. Please wait a moment and refresh once if Stripe just finished processing.";
             return Page();
         }
 
@@ -84,13 +129,17 @@ public class SuccessModel : PageModel
             Notes = $"Stripe checkout paid for {Invoice.InvoiceNumber}"
         });
 
-        if (!wasPaid && !string.IsNullOrWhiteSpace(Invoice.Client?.Email))
+        if (!wasPaid)
         {
-            var bytes = _pdf.GenerateInvoicePdf(Invoice, company);
             var paidDate = Invoice.PaidAtUtc?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
             var tx = string.IsNullOrWhiteSpace(session.PaymentIntentId) ? session.Id : session.PaymentIntentId;
+            var paymentSummary = $"Payment Mode: Online / Stripe\nTransaction ID: {tx}\nPaid Date: {paidDate} UTC\nAmount Paid: {InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Invoice, company), company)}";
+            Invoice.Notes = MergePaymentSummary(Invoice.Notes, paymentSummary);
 
-            var body = $@"<html>
+            if (!string.IsNullOrWhiteSpace(Invoice.Client?.Email))
+            {
+                var bytes = _pdf.GenerateInvoicePdf(Invoice, company);
+                var body = $@"<html>
 <body style='margin:0;padding:0;background:#f5f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;'>
   <div style='max-width:640px;margin:24px auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;'>
     <div style='padding:24px 28px;background:linear-gradient(135deg,#16a34a,#15803d);color:#ffffff;'>
@@ -101,26 +150,26 @@ public class SuccessModel : PageModel
       <p style='margin:0 0 18px 0;font-size:16px;'>Hello {Invoice.Client.Name},</p>
       <p style='margin:0 0 16px 0;font-size:15px;line-height:1.7;'>We have successfully received your payment for invoice <strong>{Invoice.InvoiceNumber}</strong>.</p>
       <table style='width:100%;border-collapse:collapse;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;'>
-        <tr><td style='padding:12px 16px;color:#64748b;'>Amount Paid</td><td style='padding:12px 16px;font-weight:800;text-align:right;'>{Invoice.Total:0.00}</td></tr>
-        <tr><td style='padding:12px 16px;color:#64748b;'>Payment Date</td><td style='padding:12px 16px;font-weight:700;text-align:right;'>{paidDate}</td></tr>
+        <tr><td style='padding:12px 16px;color:#64748b;'>Amount Paid</td><td style='padding:12px 16px;font-weight:800;text-align:right;'>{InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Invoice, company), company)}</td></tr>
+        <tr><td style='padding:12px 16px;color:#64748b;'>Payment Date</td><td style='padding:12px 16px;font-weight:700;text-align:right;'>{paidDate} UTC</td></tr>
         <tr><td style='padding:12px 16px;color:#64748b;'>Transaction ID</td><td style='padding:12px 16px;font-weight:700;text-align:right;'>{tx}</td></tr>
         <tr><td style='padding:12px 16px;color:#64748b;'>Status</td><td style='padding:12px 16px;font-weight:700;text-align:right;color:#166534;'>Paid</td></tr>
       </table>
-      <p style='margin:18px 0 0 0;font-size:14px;color:#64748b;line-height:1.7;'>A paid PDF copy is attached for your records.</p>
+      <p style='margin:18px 0 0 0;font-size:14px;color:#64748b;line-height:1.7;'>Attached paid invoice includes the payment slip / payment summary for future checking.</p>
       <p style='margin:20px 0 0 0;font-size:14px;color:#64748b;line-height:1.7;'>Thank you,<br>{company.Name}</p>
     </div>
   </div>
 </body>
 </html>";
 
-            await _email.SendAsync(
-                Invoice.Client.Email!,
-                $"Payment received for Invoice {Invoice.InvoiceNumber}",
-                body,
-                bytes,
-                $"{Invoice.InvoiceNumber}-PAID.pdf");
+                await _email.SendAsync(
+                    Invoice.Client.Email!,
+                    $"Payment received for Invoice {Invoice.InvoiceNumber}",
+                    body,
+                    bytes,
+                    $"{Invoice.InvoiceNumber}-PAID.pdf");
 
-            _db.ReminderLogs.Add(new ReminderLog
+                _db.ReminderLogs.Add(new ReminderLog
             {
                 CompanyId = company.Id,
                 InvoiceId = Invoice.Id,
@@ -130,6 +179,7 @@ public class SuccessModel : PageModel
                 To = Invoice.Client.Email,
                 Notes = $"Stripe paid receipt email sent for {Invoice.InvoiceNumber}"
             });
+            }
         }
 
         await _db.SaveChangesAsync();
@@ -137,6 +187,20 @@ public class SuccessModel : PageModel
             ? "This invoice was already marked as paid."
             : "Payment confirmed. Invoice marked as paid and receipt email sent.";
         return Page();
+    }
+
+    private static string MergePaymentSummary(string? existingNotes, string paymentSummary)
+    {
+        const string prefix = "---- PAYMENT SUMMARY ----";
+        var baseNotes = existingNotes ?? string.Empty;
+        var markerIndex = baseNotes.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+        if (markerIndex >= 0)
+            baseNotes = baseNotes[..markerIndex].TrimEnd();
+
+        if (!string.IsNullOrWhiteSpace(baseNotes))
+            return baseNotes + "\n\n" + prefix + "\n" + paymentSummary.Trim();
+
+        return prefix + "\n" + paymentSummary.Trim();
     }
 
     public async Task<IActionResult> OnPostDownload(string token)

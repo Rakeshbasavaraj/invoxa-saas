@@ -3,6 +3,8 @@
 @{ ViewData["Title"] = "Clients"; }
 <div class="stack">
   <a class="btn primary" asp-page="/Clients/Create">Add Client</a>
+  <a class="btn" asp-page="/Clients/Import"><i class="bi bi-upload"></i> Import Clients</a>
+  <a class="btn" asp-page="/Clients/Import" asp-page-handler="DownloadSample"><i class="bi bi-download"></i> Download Sample</a>
 </div>
 <div style="height:10px"></div>
 
@@ -25,6 +27,7 @@
       <th>Name</th>
       <th>Email</th>
       <th>Phone</th>
+      <th>Country</th>
       <th>Portal</th>
       <th style="width:140px">Action</th>
     </tr>
@@ -36,6 +39,7 @@
       <td>@c.Name</td>
       <td>@c.Email</td>
       <td>@c.Phone</td>
+      <td>@c.Country</td>
       <td><a href="/c/@c.PortalToken" target="_blank">Open</a></td>
       <td>
         <form method="post" asp-page-handler="Delete" style="display:inline" onsubmit="return confirm('Delete client @c.Name?');">

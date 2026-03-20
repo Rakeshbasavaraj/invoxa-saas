@@ -24,7 +24,7 @@
                 </div>
                 <div>
                     <div style="font-size:13px;color:#6b7280;">Amount Paid</div>
-                    <div style="font-size:22px;font-weight:800;">@Model.Invoice.Total.ToString("0.00")</div>
+                    <div style="font-size:22px;font-weight:800;">@InvoiceMoney.FormatAmount(InvoiceMoney.GetGrandTotal(Model.Invoice, Model.Company), Model.Company)</div>
                 </div>
                 <div>
                     <div style="font-size:13px;color:#6b7280;">Status</div>
